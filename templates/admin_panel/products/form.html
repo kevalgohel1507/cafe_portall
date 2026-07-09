@@ -1,0 +1,706 @@
+{% extends 'admin_panel/base_admin.html' %}
+
+{% block title %}{{ title }} — Admin{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+<style>
+/* ===== FORM IMPROVEMENTS ===== */
+.form-section {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.form-section h5 {
+  color: var(--cream);
+  margin-bottom: 15px;
+}
+
+.form-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.form-control, select, textarea {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid var(--border);
+  color: var(--cream);
+  border-radius: 10px;
+}
+
+.form-control:focus {
+  border-color: var(--gold);
+  box-shadow: none;
+}
+
+.btn-cafe {
+  background: var(--gold);
+  color: black;
+  border-radius: 10px;
+}
+
+.btn-del {
+  background: #ff4d4d;
+  color: white;
+  border-radius: 8px;
+}
+
+.preview-box {
+  background: rgba(255,255,255,0.05);
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 style="color:var(--cream);">{{ title }}</h4>
+  <a href="{% url 'admin_panel:product_list' %}" class="btn btn-outline-cafe btn-sm">← Back</a>
+</div>
+
+<div class="cafe-card p-4" style="max-width:1000px;">
+
+<form method="post" enctype="multipart/form-data">
+{% csrf_token %}
+
+<!-- ================= BASIC INFO ================= -->
+<div class="form-section">
+  <h5>📦 Basic Information</h5>
+
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">Product Name *</label>
+      {{ form.name }}
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Category *</label>
+      {{ form.category }}
+    </div>
+
+    <div class="col-12">
+      <label class="form-label">Description *</label>
+      {{ form.description }}
+    </div>
+
+    <div class="col-12">
+      <label class="form-label">Short Description</label>
+      {{ form.short_description }}
+    </div>
+  </div>
+</div>
+
+<!-- ================= PRICING ================= -->
+<div class="form-section">
+  <h5>💰 Pricing</h5>
+
+  <div class="row g-3">
+    <div class="col-md-4">
+      <label class="form-label">Price (₹)</label>
+      {{ form.price }}
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Discount Price</label>
+      {{ form.discounted_price }}
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Temperature</label>
+      {{ form.temperature }}
+    </div>
+  </div>
+
+  <div class="mt-3 preview-box" id="realtimePricePreview">
+    Base: ₹0 | Add-ons: ₹0 | Total: ₹0
+  </div>
+</div>
+
+<!-- ================= VARIANT PRICING ================= -->
+<div class="form-section">
+  <h5>📏 Variant Pricing</h5>
+  <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:.75rem;">Add pack/size variants like 110 ml, 140 ml, 180 ml with final selling price.</p>
+
+  <button type="button" id="openVariantBtn" class="btn btn-outline-cafe btn-sm">+ Add Variant Price</button>
+
+  <div id="variantPanel" style="display:none;margin-top:1rem;">
+    <div id="variantRows"></div>
+
+    <div class="d-flex justify-content-end gap-2 mt-2 flex-wrap">
+      <button type="button" id="saveVariantBtn" class="btn btn-cafe btn-sm">Save</button>
+      <button type="button" id="addMoreVariantBtn" class="btn btn-outline-cafe btn-sm">Add More</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ATTRIBUTES ================= -->
+<div class="form-section">
+  <h5>⚙️ Product Attributes</h5>
+
+  <div id="mappedCategoryAttributes" style="color:var(--text-muted);">
+    Select category to load attributes...
+  </div>
+</div>
+
+<!-- ================= CUSTOMIZATIONS ================= -->
+<div class="form-section">
+  <h5>🧩 Customizations</h5>
+  <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:.75rem;">Add options like Irish shot, extra cream, etc. with extra price.</p>
+
+  <button type="button" id="openCustomizationBtn" class="btn btn-outline-cafe btn-sm">+ Add Customization</button>
+
+  <div id="customizationPanel" style="display:none;margin-top:1rem;">
+    <div id="customizationRows"></div>
+
+    <div class="d-flex justify-content-end gap-2 mt-2 flex-wrap">
+      <button type="button" id="saveCustomizationBtn" class="btn btn-cafe btn-sm">Save</button>
+      <button type="button" id="addMoreCustomizationBtn" class="btn btn-outline-cafe btn-sm">Add More</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= DETAILS ================= -->
+<div class="form-section">
+  <h5>📊 Additional Details</h5>
+
+  <div class="row g-3">
+    <div class="col-md-3">
+      <label class="form-label">Calories</label>
+      {{ form.calories }}
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Prep Time</label>
+      {{ form.prep_time }}
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Stock</label>
+      {{ form.stock }}
+    </div>
+
+    <div class="col-md-3 d-flex align-items-end">
+      <div class="form-check">
+        {{ form.track_stock }}
+        <label class="form-check-label">Track Stock</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MEDIA ================= -->
+<div class="form-section">
+  <h5>🖼️ Product Media</h5>
+
+  <label class="form-label">Upload Image</label>
+  {{ form.image }}
+</div>
+
+<!-- ================= EXTRA ================= -->
+<div class="form-section">
+  <h5>🍽️ Ingredients & Allergens</h5>
+
+  <label class="form-label">Ingredients</label>
+  {{ form.ingredients }}
+
+  <label class="form-label mt-3">Allergens</label>
+  {{ form.allergens }}
+</div>
+
+<!-- ================= FLAGS ================= -->
+<div class="form-section">
+  <h5>⚡ Options</h5>
+
+  <div class="row g-2">
+    {% for field in form %}
+      {% if field.field.widget.input_type == 'checkbox' %}
+      <div class="col-auto">
+        <div class="form-check">
+          {{ field }}
+          <label class="form-check-label">{{ field.label }}</label>
+        </div>
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+<!-- ================= ACTION ================= -->
+<div class="d-flex justify-content-end gap-3 mt-4">
+  <a href="{% url 'admin_panel:product_list' %}" class="btn btn-outline-cafe px-4">Cancel</a>
+  <button type="submit" class="btn btn-cafe px-4">
+    💾 Save Product
+  </button>
+</div>
+
+</form>
+</div>
+
+{{ mapped_attribute_values|default:'{}'|json_script:'mapped-attr-initial-values' }}
+{{ customizations|default:'[]'|json_script:'customization-initial-values' }}
+{{ variants|default:'[]'|json_script:'variant-initial-values' }}
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  (function() {
+    const categorySelect = document.getElementById('id_category');
+    const priceInput = document.getElementById('id_price');
+    const mappedContainer = document.getElementById('mappedCategoryAttributes');
+    const previewBox = document.getElementById('realtimePricePreview');
+    const initialNode = document.getElementById('mapped-attr-initial-values');
+    const customizationInitialNode = document.getElementById('customization-initial-values');
+    const variantInitialNode = document.getElementById('variant-initial-values');
+    const objectId = "{% if object %}{{ object.pk }}{% endif %}";
+    const openCustomizationBtn = document.getElementById('openCustomizationBtn');
+    const customizationPanel = document.getElementById('customizationPanel');
+    const customizationRows = document.getElementById('customizationRows');
+    const saveCustomizationBtn = document.getElementById('saveCustomizationBtn');
+    const addMoreCustomizationBtn = document.getElementById('addMoreCustomizationBtn');
+    const openVariantBtn = document.getElementById('openVariantBtn');
+    const variantPanel = document.getElementById('variantPanel');
+    const variantRows = document.getElementById('variantRows');
+    const saveVariantBtn = document.getElementById('saveVariantBtn');
+    const addMoreVariantBtn = document.getElementById('addMoreVariantBtn');
+
+    let initialValues = {};
+    let initialCustomizations = [];
+    let initialVariants = [];
+    try {
+      initialValues = initialNode ? JSON.parse(initialNode.textContent || '{}') : {};
+    } catch (error) {
+      initialValues = {};
+    }
+
+    try {
+      initialCustomizations = customizationInitialNode ? JSON.parse(customizationInitialNode.textContent || '[]') : [];
+      if (!Array.isArray(initialCustomizations)) {
+        initialCustomizations = [];
+      }
+    } catch (error) {
+      initialCustomizations = [];
+    }
+
+    try {
+      initialVariants = variantInitialNode ? JSON.parse(variantInitialNode.textContent || '[]') : [];
+      if (!Array.isArray(initialVariants)) {
+        initialVariants = [];
+      }
+    } catch (error) {
+      initialVariants = [];
+    }
+
+    function parseLegacyOptions(rawValue) {
+      if (!rawValue) {
+        return [];
+      }
+      return String(rawValue)
+        .split(',')
+        .map(function(piece) { return piece.trim(); })
+        .filter(Boolean)
+        .map(function(piece) {
+          let label = piece;
+          let price = '';
+          if (piece.includes(':')) {
+            const parts = piece.split(':');
+            label = parts.slice(0, -1).join(':').trim();
+            price = (parts[parts.length - 1] || '').trim();
+          } else if (piece.includes('=')) {
+            const parts = piece.split('=');
+            label = parts.slice(0, -1).join('=').trim();
+            price = (parts[parts.length - 1] || '').trim();
+          }
+          return {
+            label: label,
+            price_modifier: price || ''
+          };
+        })
+        .filter(function(item) { return item.label; });
+    }
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function rowHtml(attribute, rowData, rowIndex) {
+      const safeName = escapeHtml(attribute.name || 'Option');
+      const optionValue = escapeHtml(rowData && rowData.label ? rowData.label : '');
+      const priceValue = escapeHtml(rowData && rowData.price_modifier !== undefined ? rowData.price_modifier : '');
+      const required = attribute.is_required && rowIndex === 0 ? 'required' : '';
+
+      return [
+        '<div class="mapped-option-row row g-2 mb-2" data-attribute-id="' + attribute.id + '">',
+        '<div class="col-md-6">',
+        '<input type="text" class="form-control mapped-option-input" name="mapped_attr_option_' + attribute.id + '[]" value="' + optionValue + '" placeholder="' + safeName + ' option (e.g. Irish Shot)" ' + required + '>',
+        '</div>',
+        '<div class="col-md-4">',
+        '<input type="number" step="0.01" min="0" class="form-control mapped-price-input" name="mapped_attr_price_' + attribute.id + '[]" value="' + priceValue + '" placeholder="Extra price (₹)">',
+        '</div>',
+        '<div class="col-md-2 d-grid">',
+        '<button type="button" class="btn btn-del remove-option-row">Remove</button>',
+        '</div>',
+        '</div>'
+      ].join('');
+    }
+
+    function attributeBlockHtml(attribute, options) {
+      const rows = options.length ? options : [{ label: '', price_modifier: '' }];
+      const cards = rows.map(function(option, index) {
+        return rowHtml(attribute, option, index);
+      }).join('');
+
+      return [
+        '<div class="form-section" data-attribute-card="' + attribute.id + '" style="margin-bottom:14px;">',
+        '<div class="d-flex justify-content-between align-items-center mb-2">',
+        '<h6 style="margin:0;color:var(--cream);">' + escapeHtml(attribute.name) + (attribute.is_required ? ' <small style="color:#f6b26b;">(Required)</small>' : ' <small style="color:var(--text-muted);">(Optional)</small>') + '</h6>',
+        '<button type="button" class="btn btn-outline-cafe btn-sm add-option-row" data-attribute-id="' + attribute.id + '">+ Add More</button>',
+        '</div>',
+        '<div class="attribute-rows">',
+        cards,
+        '</div>',
+        '<small style="color:var(--text-muted);">These options appear as checkboxes on the user product page.</small>',
+        '</div>'
+      ].join('');
+    }
+
+    function updatePricePreview() {
+      const basePrice = Number(priceInput && priceInput.value ? priceInput.value : 0);
+      let addonTotal = 0;
+      document.querySelectorAll('.mapped-price-input').forEach(function(input) {
+        const value = Number(input.value || 0);
+        if (!Number.isNaN(value) && value > 0) {
+          addonTotal += value;
+        }
+      });
+
+      if (customizationRows) {
+        customizationRows.querySelectorAll('.customization-price-input').forEach(function(input) {
+          const value = Number(input.value || 0);
+          if (!Number.isNaN(value) && value > 0) {
+            addonTotal += value;
+          }
+        });
+      }
+
+      const total = basePrice + addonTotal;
+      previewBox.textContent = 'Base: ₹' + basePrice.toFixed(2) + ' | Add-ons: ₹' + addonTotal.toFixed(2) + ' | Total: ₹' + total.toFixed(2);
+    }
+
+    function customizationRowHtml(label, price) {
+      const safeLabel = escapeHtml(label || '');
+      const safePrice = escapeHtml(price !== undefined ? price : '');
+      return [
+        '<div class="row g-2 mb-2 customization-row">',
+        '<div class="col-md-6">',
+        '<input type="text" name="customization_name[]" class="form-control customization-name-input" placeholder="Customization name (e.g. Irish Shot)" value="' + safeLabel + '">',
+        '</div>',
+        '<div class="col-md-4">',
+        '<input type="number" name="customization_price[]" step="0.01" min="0" class="form-control customization-price-input" placeholder="Price (₹)" value="' + safePrice + '">',
+        '</div>',
+        '<div class="col-md-2 d-grid">',
+        '<button type="button" class="btn btn-del remove-customization-row">Remove</button>',
+        '</div>',
+        '</div>'
+      ].join('');
+    }
+
+    function bindCustomizationEvents() {
+      if (!customizationRows) {
+        return;
+      }
+
+      customizationRows.querySelectorAll('.remove-customization-row').forEach(function(button) {
+        button.addEventListener('click', function() {
+          const row = this.closest('.customization-row');
+          if (!row) {
+            return;
+          }
+          if (customizationRows.children.length === 1) {
+            const nameInput = row.querySelector('.customization-name-input');
+            const priceInputField = row.querySelector('.customization-price-input');
+            if (nameInput) {
+              nameInput.value = '';
+            }
+            if (priceInputField) {
+              priceInputField.value = '';
+            }
+          } else {
+            row.remove();
+          }
+          updatePricePreview();
+        });
+      });
+
+      customizationRows.querySelectorAll('.customization-name-input, .customization-price-input').forEach(function(input) {
+        input.addEventListener('input', updatePricePreview);
+      });
+    }
+
+    function addCustomizationRow(label, price) {
+      if (!customizationRows) {
+        return;
+      }
+      customizationRows.insertAdjacentHTML('beforeend', customizationRowHtml(label || '', price || ''));
+      bindCustomizationEvents();
+      updatePricePreview();
+    }
+
+    function initCustomizationSection() {
+      if (!openCustomizationBtn || !customizationPanel || !customizationRows) {
+        return;
+      }
+
+      openCustomizationBtn.addEventListener('click', function() {
+        customizationPanel.style.display = 'block';
+        if (!customizationRows.children.length) {
+          addCustomizationRow('', '');
+        }
+      });
+
+      if (addMoreCustomizationBtn) {
+        addMoreCustomizationBtn.addEventListener('click', function() {
+          customizationPanel.style.display = 'block';
+          addCustomizationRow('', '');
+        });
+      }
+
+      if (saveCustomizationBtn) {
+        saveCustomizationBtn.addEventListener('click', function() {
+          customizationPanel.style.display = 'block';
+          const firstEmpty = customizationRows.querySelector('.customization-name-input[value=""]');
+          if (firstEmpty) {
+            firstEmpty.focus();
+          }
+        });
+      }
+
+      if (initialCustomizations.length) {
+        customizationPanel.style.display = 'block';
+        initialCustomizations.forEach(function(row) {
+          addCustomizationRow(row.label || '', row.price_modifier || '');
+        });
+      }
+    }
+
+    function variantRowHtml(label, price) {
+      const safeLabel = escapeHtml(label || '');
+      const safePrice = escapeHtml(price !== undefined ? price : '');
+      return [
+        '<div class="row g-2 mb-2 variant-row">',
+        '<div class="col-md-6">',
+        '<input type="text" name="variant_name[]" class="form-control variant-name-input" placeholder="Variant name (e.g. 140 ml)" value="' + safeLabel + '">',
+        '</div>',
+        '<div class="col-md-4">',
+        '<input type="number" name="variant_price[]" step="0.01" min="0" class="form-control variant-price-input" placeholder="Final price (₹)" value="' + safePrice + '">',
+        '</div>',
+        '<div class="col-md-2 d-grid">',
+        '<button type="button" class="btn btn-del remove-variant-row">Remove</button>',
+        '</div>',
+        '</div>'
+      ].join('');
+    }
+
+    function bindVariantEvents() {
+      if (!variantRows) {
+        return;
+      }
+
+      variantRows.querySelectorAll('.remove-variant-row').forEach(function(button) {
+        button.addEventListener('click', function() {
+          const row = this.closest('.variant-row');
+          if (!row) {
+            return;
+          }
+          if (variantRows.children.length === 1) {
+            const nameInput = row.querySelector('.variant-name-input');
+            const priceInputField = row.querySelector('.variant-price-input');
+            if (nameInput) {
+              nameInput.value = '';
+            }
+            if (priceInputField) {
+              priceInputField.value = '';
+            }
+          } else {
+            row.remove();
+          }
+        });
+      });
+    }
+
+    function addVariantRow(label, price) {
+      if (!variantRows) {
+        return;
+      }
+      variantRows.insertAdjacentHTML('beforeend', variantRowHtml(label || '', price || ''));
+      bindVariantEvents();
+    }
+
+    function initVariantSection() {
+      if (!openVariantBtn || !variantPanel || !variantRows) {
+        return;
+      }
+
+      openVariantBtn.addEventListener('click', function() {
+        variantPanel.style.display = 'block';
+        if (!variantRows.children.length) {
+          addVariantRow('', '');
+        }
+      });
+
+      if (addMoreVariantBtn) {
+        addMoreVariantBtn.addEventListener('click', function() {
+          variantPanel.style.display = 'block';
+          addVariantRow('', '');
+        });
+      }
+
+      if (saveVariantBtn) {
+        saveVariantBtn.addEventListener('click', function() {
+          variantPanel.style.display = 'block';
+          const firstEmpty = variantRows.querySelector('.variant-name-input[value=""]');
+          if (firstEmpty) {
+            firstEmpty.focus();
+          }
+        });
+      }
+
+      if (initialVariants.length) {
+        variantPanel.style.display = 'block';
+        initialVariants.forEach(function(row) {
+          addVariantRow(row.label || '', row.final_price || '');
+        });
+      }
+    }
+
+    function bindDynamicEvents() {
+      mappedContainer.querySelectorAll('.add-option-row').forEach(function(button) {
+        button.addEventListener('click', function() {
+          const attributeId = this.getAttribute('data-attribute-id');
+          const card = mappedContainer.querySelector('[data-attribute-card="' + attributeId + '"]');
+          const rowsHolder = card ? card.querySelector('.attribute-rows') : null;
+          if (!rowsHolder) {
+            return;
+          }
+
+          const attributeName = card.querySelector('h6').textContent.replace('(Required)', '').replace('(Optional)', '').trim();
+          const required = card.querySelector('h6').textContent.includes('(Required)');
+          rowsHolder.insertAdjacentHTML('beforeend', rowHtml({
+            id: attributeId,
+            name: attributeName,
+            is_required: required
+          }, { label: '', price_modifier: '' }, rowsHolder.children.length));
+          updatePricePreview();
+        });
+      });
+
+      mappedContainer.querySelectorAll('.remove-option-row').forEach(function(button) {
+        button.addEventListener('click', function() {
+          const row = this.closest('.mapped-option-row');
+          const rowsHolder = row ? row.parentElement : null;
+          if (!row || !rowsHolder) {
+            return;
+          }
+
+          if (rowsHolder.children.length === 1) {
+            const optionInput = row.querySelector('.mapped-option-input');
+            const priceInputField = row.querySelector('.mapped-price-input');
+            if (optionInput) {
+              optionInput.value = '';
+            }
+            if (priceInputField) {
+              priceInputField.value = '';
+            }
+          } else {
+            row.remove();
+          }
+          updatePricePreview();
+        });
+      });
+
+      mappedContainer.querySelectorAll('.mapped-price-input, .mapped-option-input').forEach(function(input) {
+        input.addEventListener('input', updatePricePreview);
+      });
+    }
+
+    function buildUrl(categoryId) {
+      let url = "{% url 'admin_panel:category_attributes_json' 0 %}";
+      url = url.replace('/0/', '/' + categoryId + '/');
+      if (objectId) {
+        url += '?product_id=' + encodeURIComponent(objectId);
+      }
+      return url;
+    }
+
+    function renderMappedAttributes(data) {
+      const attrs = (data && data.attributes) ? data.attributes : [];
+      if (!attrs.length) {
+        mappedContainer.innerHTML = '<div class="preview-box">No category attributes mapped. Add mappings in Category Attributes first.</div>';
+        updatePricePreview();
+        return;
+      }
+
+      mappedContainer.innerHTML = attrs.map(function(attribute) {
+        const apiOptions = Array.isArray(attribute.options) ? attribute.options : [];
+        let options = apiOptions.map(function(option) {
+          return {
+            label: option.label || '',
+            price_modifier: option.price_modifier || ''
+          };
+        }).filter(function(option) {
+          return option.label;
+        });
+
+        const fallbackRaw = initialValues[String(attribute.id)] || initialValues[attribute.id] || '';
+        if (!options.length && fallbackRaw) {
+          options = parseLegacyOptions(fallbackRaw);
+        }
+
+        return attributeBlockHtml(attribute, options);
+      }).join('');
+
+      bindDynamicEvents();
+      updatePricePreview();
+    }
+
+    function loadMappedAttributes() {
+      const categoryId = categorySelect ? categorySelect.value : '';
+      if (!categoryId) {
+        mappedContainer.innerHTML = '<div class="preview-box">Select category to load customization attributes.</div>';
+        updatePricePreview();
+        return;
+      }
+
+      mappedContainer.innerHTML = '<div class="preview-box">Loading category attributes...</div>';
+
+      fetch(buildUrl(categoryId), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(function(response) { return response.json(); })
+        .then(renderMappedAttributes)
+        .catch(function() {
+          mappedContainer.innerHTML = '<div class="preview-box">Unable to load attributes. Please refresh and try again.</div>';
+          updatePricePreview();
+        });
+    }
+
+    if (categorySelect) {
+      categorySelect.addEventListener('change', loadMappedAttributes);
+    }
+    if (priceInput) {
+      priceInput.addEventListener('input', updatePricePreview);
+    }
+
+    initCustomizationSection();
+    initVariantSection();
+    loadMappedAttributes();
+  })();
+</script>
+{% endblock %}

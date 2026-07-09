@@ -1,0 +1,32 @@
+{% extends 'base/base.html' %}
+{% block title %}Reservation Confirmed — Brew & Bliss{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width:760px;">
+  <div class="cafe-card p-5 text-center">
+    <div style="font-size:3.5rem;">✅</div>
+    <h2 class="section-title mt-2">Reservation Confirmed</h2>
+    <p style="color:var(--text-muted);">Your booking is saved and a confirmation email has been sent.</p>
+
+    <div class="cafe-card p-4 text-start my-4" style="background:rgba(255,255,255,.03);">
+      <div class="row g-3">
+        <div class="col-md-6"><small style="color:var(--text-muted);">Booking Reference</small><p style="color:var(--gold);font-weight:700;margin:0;">{{ reservation.booking_reference }}</p></div>
+        <div class="col-md-6"><small style="color:var(--text-muted);">Status</small><p style="color:var(--cream);margin:0;">{{ reservation.get_status_display }}</p></div>
+        <div class="col-md-6"><small style="color:var(--text-muted);">Cafe</small><p style="color:var(--cream);margin:0;">{{ reservation.get_cafe_location_display }}</p></div>
+        <div class="col-md-6"><small style="color:var(--text-muted);">Date</small><p style="color:var(--cream);margin:0;">{{ reservation.date|date:"D, d M Y" }}</p></div>
+        <div class="col-md-6"><small style="color:var(--text-muted);">Time Slot</small><p style="color:var(--cream);margin:0;">{{ reservation.time_slot }}</p></div>
+        <div class="col-md-6"><small style="color:var(--text-muted);">Guests</small><p style="color:var(--cream);margin:0;">{{ reservation.guests }}</p></div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-center gap-2 flex-wrap">
+      <a href="{{ calendar_url }}" target="_blank" class="btn btn-outline-cafe">Add to Calendar</a>
+      {% if user.is_authenticated %}
+      <a href="{% url 'reservations:my_reservations' %}" class="btn btn-cafe">View in My Bookings</a>
+      {% else %}
+      <a href="{% url 'reservations:make_reservation' %}" class="btn btn-cafe">Book Another</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

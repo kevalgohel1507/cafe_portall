@@ -1,0 +1,79 @@
+{% extends 'base/base.html' %}
+{% block title %}My Bookings — Brew & Bliss{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h2 class="section-title">My Reservations</h2>
+    <a href="{% url 'reservations:make_reservation' %}" class="btn btn-cafe">+ New Reservation</a>
+  </div>
+
+  <h5 style="color:var(--cream);margin-bottom:1rem;">Upcoming</h5>
+  {% if upcoming_reservations %}
+  <div class="row g-3 mb-5">
+    {% for r in upcoming_reservations %}
+    <div class="col-md-6">
+      <div class="cafe-card p-4 h-100">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <h6 style="color:var(--cream);margin:0;">{{ r.get_cafe_location_display }}</h6>
+            <small style="color:var(--text-muted);">Ref: {{ r.booking_reference }}</small>
+          </div>
+          <span class="badge" style="background:rgba(40,167,69,.2);color:#75d98f;">{{ r.get_status_display }}</span>
+        </div>
+
+        <p style="color:var(--text-muted);margin:.25rem 0;">{{ r.date|date:"D, d M Y" }} · {{ r.time_slot }}</p>
+        <p style="color:var(--text-muted);margin:.25rem 0;">Guests: {{ r.guests }}</p>
+        {% if r.occasion %}<p style="color:var(--text-muted);margin:.25rem 0;">Occasion: {{ r.occasion }}</p>{% endif %}
+        {% if r.special_requests %}<p style="color:var(--text-muted);margin:.45rem 0 0;font-style:italic;">{{ r.special_requests }}</p>{% endif %}
+
+        <div class="d-flex gap-2 mt-3 flex-wrap">
+          {% if r.can_cancel %}
+          <form method="post" action="{% url 'reservations:cancel_reservation' r.pk %}">
+            {% csrf_token %}
+            <button class="btn btn-del btn-sm">Cancel</button>
+          </form>
+          {% else %}
+          <small style="color:#ffd978;align-self:center;">Cancellation window closed (2 hours rule).</small>
+          {% endif %}
+          <a class="btn btn-outline-cafe btn-sm" href="{% url 'reservations:rebook_reservation' r.pk %}">Rebook</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="cafe-card p-4 mb-5" style="color:var(--text-muted);">No upcoming reservations.</div>
+  {% endif %}
+
+  <h5 style="color:var(--cream);margin-bottom:1rem;">Past Bookings</h5>
+  {% if past_reservations %}
+  <div class="row g-3">
+    {% for r in past_reservations %}
+    <div class="col-md-6">
+      <div class="cafe-card p-4 h-100" style="opacity:.9;">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <h6 style="color:var(--cream);margin:0;">{{ r.get_cafe_location_display }}</h6>
+            <small style="color:var(--text-muted);">Ref: {{ r.booking_reference }}</small>
+          </div>
+          <span class="badge" style="
+            {% if r.status == 'completed' %}background:rgba(23,162,184,.2);color:#6ee3f5;
+            {% elif r.status == 'cancelled' %}background:rgba(220,53,69,.2);color:#f27680;
+            {% elif r.status == 'no_show' %}background:rgba(220,120,53,.2);color:#ffb080;
+            {% else %}background:rgba(255,193,7,.2);color:#ffd84d;{% endif %}">
+            {{ r.get_status_display }}
+          </span>
+        </div>
+        <p style="color:var(--text-muted);margin:.25rem 0;">{{ r.date|date:"D, d M Y" }} · {{ r.time_slot }}</p>
+        <p style="color:var(--text-muted);margin:.25rem 0;">Guests: {{ r.guests }}</p>
+        <a class="btn btn-outline-cafe btn-sm mt-2" href="{% url 'reservations:rebook_reservation' r.pk %}">Rebook</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="cafe-card p-4" style="color:var(--text-muted);">No past reservations yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

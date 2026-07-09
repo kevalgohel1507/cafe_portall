@@ -1,0 +1,81 @@
+{% extends 'base/base.html' %}
+{% block title %}Cart — Brew & Bliss{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <h2 class="section-title mb-4">🛒 Your Cart</h2>
+  {% if items %}
+  <div class="row g-4">
+    <div class="col-lg-8">
+      {% for item in items %}
+      <div class="cafe-card p-3 mb-3 d-flex align-items-center gap-3">
+        <div style="width:70px;height:70px;background:linear-gradient(135deg,var(--roast),var(--espresso));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;overflow:hidden;">
+          {% if item.product.image %}<img src="{{ item.product.image.url }}" style="width:100%;height:100%;object-fit:cover;">{% else %}☕{% endif %}
+        </div>
+        <div class="flex-grow-1">
+          <h6 style="color:var(--cream);margin-bottom:.1rem;">{{ item.product.name }}</h6>
+          <small style="color:var(--text-muted);">₹{{ item.product.effective_price }} each</small>
+          {% if item.selected_attributes.options %}
+          <div style="margin-top:.35rem;">
+            {% for option in item.selected_attributes.options %}
+            <div>
+              <small style="color:var(--text-muted);">{{ option.name }}: {{ option.value }}{% if option.price_modifier > 0 %} (+₹{{ option.price_modifier }}){% endif %}</small>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% if item.special_instructions %}<br><small style="color:var(--text-muted);font-style:italic;">Note: {{ item.special_instructions }}</small>{% endif %}
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <form method="post" action="{% url 'orders:update_cart' item.pk %}">
+            {% csrf_token %}
+            <div class="d-flex align-items-center gap-1">
+              <button name="quantity" value="{{ item.quantity|add:'-1' }}" class="btn btn-sm" style="background:rgba(255,255,255,.05);color:var(--cream);border:1px solid var(--border);border-radius:6px;width:28px;height:28px;">−</button>
+              <span style="color:var(--cream);font-weight:600;min-width:24px;text-align:center;">{{ item.quantity }}</span>
+              <button name="quantity" value="{{ item.quantity|add:'1' }}" class="btn btn-sm" style="background:rgba(255,255,255,.05);color:var(--cream);border:1px solid var(--border);border-radius:6px;width:28px;height:28px;">+</button>
+            </div>
+          </form>
+        </div>
+        <div style="min-width:70px;text-align:right;">
+          <strong style="color:var(--gold);">₹{{ item.subtotal }}</strong>
+        </div>
+        <form method="post" action="{% url 'orders:remove_from_cart' item.pk %}">
+          {% csrf_token %}
+          <button class="btn btn-sm" style="background:rgba(220,53,69,.1);color:#f27680;border:1px solid rgba(220,53,69,.2);border-radius:8px;padding:.3rem .6rem;">✕</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="col-lg-4">
+      <div class="cafe-card p-4 position-sticky" style="top:90px;">
+        <h5 style="color:var(--cream);">Order Summary</h5>
+        <div class="d-flex justify-content-between my-2">
+          <span style="color:var(--text-muted);">Subtotal</span>
+          <span style="color:var(--cream);">₹{{ summary.subtotal }}</span>
+        </div>
+        <div class="d-flex justify-content-between my-2">
+          <span style="color:var(--text-muted);">Platform Fee (5%)</span>
+          <span style="color:var(--cream);">₹{{ summary.platform_fee }}</span>
+        </div>
+        <div class="d-flex justify-content-between my-2">
+          <span style="color:var(--text-muted);">GST on Platform Fee (18%)</span>
+          <span style="color:var(--cream);">₹{{ summary.platform_fee_tax }}</span>
+        </div>
+        <hr style="border-color:var(--border);">
+        <div class="d-flex justify-content-between my-2">
+          <strong style="color:var(--cream);">Total</strong>
+          <strong style="color:var(--gold);font-size:1.2rem;">₹{{ summary.total }}</strong>
+        </div>
+        <a href="{% url 'orders:checkout' %}" class="btn btn-cafe w-100 py-2 mt-2">Proceed to Checkout →</a>
+        <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-cafe w-100 mt-2">Continue Shopping</a>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="text-center py-5">
+    <div style="font-size:5rem;opacity:.2;">🛒</div>
+    <h4 style="color:var(--text-muted);margin-top:1rem;">Your cart is empty</h4>
+    <a href="{% url 'menu:menu_list' %}" class="btn btn-cafe mt-3">Browse Menu</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

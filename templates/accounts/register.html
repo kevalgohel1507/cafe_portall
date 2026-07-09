@@ -1,0 +1,740 @@
+{% extends 'base/base.html' %}
+{% block title %}Register — Brew & Bliss{% endblock %}
+
+{% block extra_styles %}
+
+/* ══════════════════════════════════════
+   REGISTER PAGE
+══════════════════════════════════════ */
+
+.register-wrapper {
+  min-height: calc(100vh - 72px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  position: relative;
+}
+
+/* Ambient glow background */
+.register-wrapper::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 800px; height: 600px;
+  background: radial-gradient(ellipse at center, rgba(212,168,83,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Auth Card ── */
+.auth-card {
+  width: 100%;
+  max-width: 560px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 2.8rem 2.6rem;
+  position: relative;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.45);
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Top gold accent line */
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 80px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  border-radius: 2px;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Header ── */
+.auth-header { text-align: center; margin-bottom: 2.2rem; }
+.auth-icon {
+  width: 60px; height: 60px;
+  background: rgba(212,168,83,0.1);
+  border: 1px solid rgba(212,168,83,0.25);
+  border-radius: 18px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+  margin-bottom: 1rem;
+}
+.auth-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.75rem; font-weight: 700;
+  color: var(--cream); margin-bottom: 0.3rem;
+}
+.auth-sub { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+
+/* ── Section divider inside form ── */
+.form-section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 1.4rem 0 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.form-section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── Form Grid ── */
+.form-grid {
+  display: grid;
+  gap: 1rem;
+}
+.form-grid .col-half {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* ── Field Group ── */
+.field-group { display: flex; flex-direction: column; gap: 0.35rem; }
+
+.field-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.field-label .required-dot {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--gold);
+  display: inline-block;
+}
+
+/* ── Input wrapper (icon + input) ── */
+.input-wrap {
+  position: relative;
+}
+.input-icon {
+  position: absolute;
+  left: 13px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  pointer-events: none;
+  transition: color 0.2s;
+  z-index: 1;
+}
+.field-group:focus-within .input-icon { color: var(--gold); }
+
+/* The actual input — overrides Django's auto-rendered widget */
+.field-group input,
+.field-group select,
+.field-group textarea {
+  width: 100% !important;
+  background: rgba(255,255,255,0.04) !important;
+  border: 1.5px solid var(--border) !important;
+  border-radius: 12px !important;
+  color: var(--cream) !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 0.88rem !important;
+  padding: 0.72rem 1rem 0.72rem 2.4rem !important;
+  outline: none !important;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s !important;
+  -webkit-appearance: none !important;
+}
+.field-group input::placeholder,
+.field-group select::placeholder { color: rgba(160,120,96,0.45) !important; }
+.field-group input:focus,
+.field-group select:focus,
+.field-group textarea:focus {
+  border-color: var(--gold) !important;
+  background: rgba(255,255,255,0.07) !important;
+  box-shadow: 0 0 0 3px rgba(212,168,83,0.12) !important;
+}
+
+/* Password toggle */
+.input-wrap .pw-toggle {
+  position: absolute;
+  right: 12px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none;
+  color: var(--text-muted); cursor: pointer;
+  font-size: 0.78rem; padding: 2px;
+  transition: color 0.2s;
+  z-index: 2;
+}
+.input-wrap .pw-toggle:hover { color: var(--gold); }
+
+/* ── Validation States ── */
+
+/* Error */
+.field-group.has-error input,
+.field-group.has-error select {
+  border-color: #e05568 !important;
+  background: rgba(220,53,69,0.05) !important;
+}
+.field-group.has-error input:focus,
+.field-group.has-error select:focus {
+  box-shadow: 0 0 0 3px rgba(220,53,69,0.12) !important;
+}
+.field-group.has-error .input-icon { color: #e05568 !important; }
+
+.error-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  font-size: 0.73rem;
+  color: #f27680;
+  line-height: 1.4;
+  margin-top: 2px;
+  animation: errorIn 0.2s ease forwards;
+}
+.error-msg i { font-size: 0.65rem; margin-top: 2px; flex-shrink: 0; }
+
+@keyframes errorIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Success (JS-driven) */
+.field-group.is-valid input,
+.field-group.is-valid select {
+  border-color: #3dbd6c !important;
+  background: rgba(40,167,69,0.04) !important;
+}
+.field-group.is-valid input:focus,
+.field-group.is-valid select:focus {
+  box-shadow: 0 0 0 3px rgba(40,167,69,0.1) !important;
+}
+.field-group.is-valid .input-icon { color: #3dbd6c !important; }
+.valid-check {
+  position: absolute;
+  right: 12px; top: 50%;
+  transform: translateY(-50%);
+  color: #3dbd6c; font-size: 0.72rem;
+  pointer-events: none;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+/* Password strength meter */
+.pw-strength-wrap {
+  display: none;
+  margin-top: 6px;
+}
+.pw-strength-wrap.show { display: block; }
+.pw-strength-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.pw-strength-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease, background 0.3s ease;
+  width: 0%;
+}
+.pw-strength-text {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ── Checkbox ── */
+.checkbox-group {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 0.9rem 1rem;
+  background: rgba(212,168,83,0.04);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.checkbox-group:hover { border-color: rgba(212,168,83,0.3); background: rgba(212,168,83,0.06); }
+.checkbox-group input[type="checkbox"] {
+  width: 16px !important; height: 16px !important;
+  min-width: 16px;
+  border-radius: 4px !important;
+  padding: 0 !important;
+  accent-color: var(--gold);
+  cursor: pointer;
+  margin-top: 2px;
+}
+.checkbox-text { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+.checkbox-text a { color: var(--gold); text-decoration: none; }
+.checkbox-text a:hover { text-decoration: underline; }
+
+/* ── Submit Button ── */
+.btn-register {
+  width: 100%;
+  background: var(--gold);
+  color: var(--espresso);
+  border: none;
+  border-radius: 12px;
+  padding: 0.85rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: all 0.22s;
+  margin-top: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.btn-register::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.4s ease;
+}
+.btn-register:hover::before { transform: translateX(100%); }
+.btn-register:hover {
+  background: var(--latte);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(212,168,83,0.25);
+}
+.btn-register:active { transform: translateY(0); }
+
+/* ── Divider ── */
+.auth-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 1.4rem 0;
+}
+.auth-divider span { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; }
+.auth-divider::before, .auth-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* ── Sign In link ── */
+.auth-footer {
+  text-align: center;
+  margin-top: 1.2rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.auth-footer a { color: var(--gold); font-weight: 600; text-decoration: none; }
+.auth-footer a:hover { text-decoration: underline; }
+
+/* ── Perks strip ── */
+.perks-strip {
+  display: flex;
+  justify-content: center;
+  gap: 1.2rem;
+  margin-bottom: 1.8rem;
+  flex-wrap: wrap;
+}
+.perk-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 0.72rem; color: var(--text-muted);
+}
+.perk-item i { color: var(--gold); font-size: 0.65rem; }
+
+/* Responsive */
+@media (max-width: 480px) {
+  .auth-card { padding: 2rem 1.4rem; }
+  .form-grid .col-half { grid-template-columns: 1fr; }
+}
+
+{% endblock %}
+
+{% block content %}
+<div class="register-wrapper">
+  <div class="auth-card">
+
+    <!-- Header -->
+    <div class="auth-header">
+      <div class="auth-icon">✨</div>
+      <h2 class="auth-title">Join Brew & Bliss</h2>
+      <p class="auth-sub">Create your free account &amp; start earning rewards</p>
+    </div>
+
+    <!-- Perks strip -->
+    <div class="perks-strip">
+      <div class="perk-item"><i class="fas fa-star"></i> Earn Points</div>
+      <div class="perk-item"><i class="fas fa-tag"></i> Exclusive Offers</div>
+      <div class="perk-item"><i class="fas fa-clock"></i> Quick Checkout</div>
+    </div>
+
+    <!-- Form -->
+    <form method="post" id="registerForm" novalidate>
+      {% csrf_token %}
+
+      <!-- Personal Info -->
+      <div class="form-section-label">Personal Info</div>
+
+      <div class="form-grid">
+
+        <!-- First Name & Last Name side by side -->
+        <div class="col-half">
+          <!-- First Name -->
+          <div class="field-group {% if form.first_name.errors %}has-error{% endif %}" id="group_first_name">
+            <label class="field-label" for="{{ form.first_name.id_for_label }}">
+              First Name <span class="required-dot"></span>
+            </label>
+            <div class="input-wrap">
+              <i class="fas fa-user input-icon"></i>
+              {{ form.first_name }}
+              {% if not form.first_name.errors %}<span class="valid-check" style="display:none;"><i class="fas fa-check"></i></span>{% endif %}
+            </div>
+            {% if form.first_name.errors %}
+            <div class="error-msg"><i class="fas fa-exclamation-circle"></i> {{ form.first_name.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <!-- Last Name -->
+          <div class="field-group {% if form.last_name.errors %}has-error{% endif %}" id="group_last_name">
+            <label class="field-label" for="{{ form.last_name.id_for_label }}">
+              Last Name <span class="required-dot"></span>
+            </label>
+            <div class="input-wrap">
+              <i class="fas fa-user input-icon"></i>
+              {{ form.last_name }}
+              {% if not form.last_name.errors %}<span class="valid-check" style="display:none;"><i class="fas fa-check"></i></span>{% endif %}
+            </div>
+            {% if form.last_name.errors %}
+            <div class="error-msg"><i class="fas fa-exclamation-circle"></i> {{ form.last_name.errors.0 }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Username -->
+        <div class="field-group {% if form.username.errors %}has-error{% endif %}" id="group_username">
+          <label class="field-label" for="{{ form.username.id_for_label }}">
+            Username <span class="required-dot"></span>
+          </label>
+          <div class="input-wrap">
+            <i class="fas fa-at input-icon"></i>
+            {{ form.username }}
+            <span class="valid-check" style="display:none;"><i class="fas fa-check"></i></span>
+          </div>
+          {% if form.username.errors %}
+          <div class="error-msg"><i class="fas fa-exclamation-circle"></i> {{ form.username.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Email -->
+        <div class="field-group {% if form.email.errors %}has-error{% endif %}" id="group_email">
+          <label class="field-label" for="{{ form.email.id_for_label }}">
+            Email Address <span class="required-dot"></span>
+          </label>
+          <div class="input-wrap">
+            <i class="fas fa-envelope input-icon"></i>
+            {{ form.email }}
+            <span class="valid-check" style="display:none;"><i class="fas fa-check"></i></span>
+          </div>
+          {% if form.email.errors %}
+          <div class="error-msg"><i class="fas fa-exclamation-circle"></i> {{ form.email.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+      </div>
+
+      <!-- Account Security -->
+      <div class="form-section-label">Account Security</div>
+
+      <div class="form-grid">
+
+        <!-- Password -->
+        <div class="field-group {% if form.password1.errors %}has-error{% endif %}" id="group_password1">
+          <label class="field-label" for="{{ form.password1.id_for_label }}">
+            Password <span class="required-dot"></span>
+          </label>
+          <div class="input-wrap">
+            <i class="fas fa-lock input-icon"></i>
+            {{ form.password1 }}
+            <button type="button" class="pw-toggle" onclick="togglePw('{{ form.password1.id_for_label }}', this)" tabindex="-1">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+          <!-- Strength meter -->
+          <div class="pw-strength-wrap" id="pw_strength_wrap">
+            <div class="pw-strength-bar">
+              <div class="pw-strength-fill" id="pw_strength_fill"></div>
+            </div>
+            <div class="pw-strength-text" id="pw_strength_text">Enter a password</div>
+          </div>
+          {% if form.password1.errors %}
+          <div class="error-msg"><i class="fas fa-exclamation-circle"></i> {{ form.password1.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="field-group {% if form.password2.errors %}has-error{% endif %}" id="group_password2">
+          <label class="field-label" for="{{ form.password2.id_for_label }}">
+            Confirm Password <span class="required-dot"></span>
+          </label>
+          <div class="input-wrap">
+            <i class="fas fa-lock input-icon"></i>
+            {{ form.password2 }}
+            <button type="button" class="pw-toggle" onclick="togglePw('{{ form.password2.id_for_label }}', this)" tabindex="-1">
+              <i class="fas fa-eye"></i>
+            </button>
+            <span class="valid-check" id="pw2_check" style="display:none;"><i class="fas fa-check"></i></span>
+          </div>
+          {% if form.password2.errors %}
+          <div class="error-msg"><i class="fas fa-exclamation-circle"></i> {{ form.password2.errors.0 }}</div>
+          {% endif %}
+          <div class="error-msg" id="pw_match_error" style="display:none;">
+            <i class="fas fa-exclamation-circle"></i> Passwords do not match
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Extra fields from form (phone, etc.) if any -->
+      {% for field in form %}
+        {% if field.name not in "first_name,last_name,username,email,password1,password2" %}
+        <div class="form-section-label" style="margin-top:1.4rem;">Additional Info</div>
+        <div class="field-group {% if field.errors %}has-error{% endif %}">
+          <label class="field-label" for="{{ field.id_for_label }}">
+            {{ field.label }} <span class="required-dot"></span>
+          </label>
+          <div class="input-wrap">
+            <i class="fas fa-info-circle input-icon"></i>
+            {{ field }}
+          </div>
+          {% if field.errors %}
+          <div class="error-msg"><i class="fas fa-exclamation-circle"></i> {{ field.errors.0 }}</div>
+          {% endif %}
+        </div>
+        {% endif %}
+      {% endfor %}
+
+      <!-- Terms -->
+      <div style="margin-top:1.2rem;">
+        <label class="checkbox-group">
+          <input type="checkbox" id="termsCheck" required>
+          <span class="checkbox-text">
+            I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+          </span>
+        </label>
+        <div class="error-msg" id="terms_error" style="display:none; margin-top:6px;">
+          <i class="fas fa-exclamation-circle"></i> Please accept the terms to continue
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn-register" id="submitBtn">
+        <i class="fas fa-mug-hot"></i>
+        Create My Account
+      </button>
+
+    </form>
+
+    <!-- Divider -->
+    <div class="auth-divider"><span>Already brewing with us?</span></div>
+
+    <!-- Sign in link -->
+    <div class="auth-footer">
+      <a href="{% url 'accounts:login' %}">
+        <i class="fas fa-sign-in-alt" style="font-size:0.8rem;margin-right:4px;"></i>
+        Sign in to your account
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ══════════════════════════════════════
+//  PASSWORD TOGGLE
+// ══════════════════════════════════════
+function togglePw(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const isText = input.type === 'text';
+  input.type = isText ? 'password' : 'text';
+  btn.querySelector('i').className = isText ? 'fas fa-eye' : 'fas fa-eye-slash';
+}
+
+// ══════════════════════════════════════
+//  PASSWORD STRENGTH
+// ══════════════════════════════════════
+const pw1Input = document.getElementById('{{ form.password1.id_for_label }}');
+const pw2Input = document.getElementById('{{ form.password2.id_for_label }}');
+
+function getStrength(pw) {
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  return score;
+}
+
+const strengthColors = ['#e05568','#e05568','#f0a500','#3dbd6c','#3dbd6c'];
+const strengthLabels = ['Too weak','Weak','Fair','Strong','Very strong'];
+const strengthWidths  = ['20%','35%','55%','78%','100%'];
+
+if (pw1Input) {
+  pw1Input.addEventListener('input', function () {
+    const val   = this.value;
+    const wrap  = document.getElementById('pw_strength_wrap');
+    const fill  = document.getElementById('pw_strength_fill');
+    const text  = document.getElementById('pw_strength_text');
+
+    if (!val) {
+      wrap.classList.remove('show');
+      return;
+    }
+    wrap.classList.add('show');
+    const score = Math.min(getStrength(val), 4);
+    fill.style.width      = strengthWidths[score];
+    fill.style.background = strengthColors[score];
+    text.textContent      = strengthLabels[score];
+    text.style.color      = strengthColors[score];
+
+    // re-check match
+    if (pw2Input && pw2Input.value) checkMatch();
+  });
+}
+
+// ══════════════════════════════════════
+//  CONFIRM PASSWORD MATCH
+// ══════════════════════════════════════
+function checkMatch() {
+  if (!pw2Input || !pw1Input) return;
+  const group = document.getElementById('group_password2');
+  const matchErr = document.getElementById('pw_match_error');
+  const checkIcon = document.getElementById('pw2_check');
+
+  if (!pw2Input.value) return;
+
+  if (pw1Input.value === pw2Input.value) {
+    group.classList.remove('has-error');
+    group.classList.add('is-valid');
+    if (matchErr) matchErr.style.display = 'none';
+    if (checkIcon) checkIcon.style.display = 'block';
+  } else {
+    group.classList.add('has-error');
+    group.classList.remove('is-valid');
+    if (matchErr) matchErr.style.display = 'flex';
+    if (checkIcon) checkIcon.style.display = 'none';
+  }
+}
+
+if (pw2Input) pw2Input.addEventListener('input', checkMatch);
+
+// ══════════════════════════════════════
+//  LIVE FIELD VALIDATION
+// ══════════════════════════════════════
+function validateField(input, groupId, validator) {
+  if (!input) return;
+  const group = document.getElementById(groupId);
+  const check = group ? group.querySelector('.valid-check') : null;
+
+  input.addEventListener('blur', function () {
+    const val = this.value.trim();
+    if (!val) return;
+    const valid = validator(val);
+    group.classList.toggle('has-error', !valid);
+    group.classList.toggle('is-valid', valid);
+    if (check) check.style.display = valid ? 'block' : 'none';
+  });
+
+  input.addEventListener('input', function () {
+    if (group.classList.contains('has-error') || group.classList.contains('is-valid')) {
+      const val = this.value.trim();
+      const valid = validator(val);
+      group.classList.toggle('has-error', !valid);
+      group.classList.toggle('is-valid', valid);
+      if (check) check.style.display = valid ? 'block' : 'none';
+    }
+  });
+}
+
+// Email validation
+const emailInput = document.getElementById('{{ form.email.id_for_label }}');
+validateField(emailInput, 'group_email', val => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val));
+
+// Username validation
+const usernameInput = document.getElementById('{{ form.username.id_for_label }}');
+validateField(usernameInput, 'group_username', val => val.length >= 3 && /^[\w.@+-]+$/.test(val));
+
+// First/Last name
+const fn = document.getElementById('{{ form.first_name.id_for_label }}');
+const ln = document.getElementById('{{ form.last_name.id_for_label }}');
+validateField(fn, 'group_first_name', val => val.length >= 2);
+validateField(ln, 'group_last_name',  val => val.length >= 2);
+
+// ══════════════════════════════════════
+//  FORM SUBMIT GUARD
+// ══════════════════════════════════════
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+  const terms = document.getElementById('termsCheck');
+  const termsErr = document.getElementById('terms_error');
+
+  // Password match check
+  if (pw1Input && pw2Input && pw1Input.value !== pw2Input.value) {
+    e.preventDefault();
+    checkMatch();
+    pw2Input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  // Terms check
+  if (terms && !terms.checked) {
+    e.preventDefault();
+    termsErr.style.display = 'flex';
+    terms.closest('.checkbox-group').style.borderColor = '#e05568';
+    terms.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  if (termsErr) termsErr.style.display = 'none';
+});
+
+// Hide terms error when checked
+document.getElementById('termsCheck')?.addEventListener('change', function() {
+  const termsErr = document.getElementById('terms_error');
+  const group = this.closest('.checkbox-group');
+  if (this.checked) {
+    if (termsErr) termsErr.style.display = 'none';
+    if (group) group.style.borderColor = '';
+  }
+});
+
+// ══════════════════════════════════════
+//  ADD PLACEHOLDER ATTRIBUTES
+//  (Django doesn't add them by default)
+// ══════════════════════════════════════
+const placeholders = {
+  '{{ form.first_name.id_for_label }}': 'Jane',
+  '{{ form.last_name.id_for_label }}':  'Doe',
+  '{{ form.username.id_for_label }}':   'jane.doe',
+  '{{ form.email.id_for_label }}':      'jane@example.com',
+  '{{ form.password1.id_for_label }}':  'Min. 8 characters',
+  '{{ form.password2.id_for_label }}':  'Repeat your password',
+};
+
+Object.entries(placeholders).forEach(([id, ph]) => {
+  const el = document.getElementById(id);
+  if (el) el.placeholder = ph;
+});
+</script>
+{% endblock %}

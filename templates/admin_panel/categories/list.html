@@ -1,0 +1,69 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block title %}Categories — Admin{% endblock %}
+{% block page_title %}Categories{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 style="color:var(--cream);margin:0;">Categories</h4>
+    <small style="color:var(--text-muted);">{{ category_total }} total</small>
+  </div>
+  <a href="{% url 'admin_panel:category_create' %}" class="btn btn-cafe"><i class="fas fa-plus me-2"></i>Add Category</a>
+</div>
+<div class="cafe-card">
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr><th>Icon</th><th>Hierarchy</th><th>Products</th><th>Children</th><th>Cat. Attributes</th><th>Order</th><th>Active</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for cat in categories %}
+        <tr>
+          <td>
+            <div style="width:38px;height:38px;background:rgba(212,168,83,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;overflow:hidden;">
+              {% if cat.image %}
+              <img src="{{ cat.image.url }}" alt="{{ cat.name }}" style="width:100%;height:100%;object-fit:cover;">
+              {% elif cat.icon %}
+              <i class="fas {{ cat.icon }}" style="color:var(--gold);"></i>
+              {% else %}
+              ☕
+              {% endif %}
+            </div>
+          </td>
+          <td>
+            <strong style="color:var(--cream);display:inline-block;padding-left:{{ cat.tree_level|add:0 }}rem;">
+              {% if cat.tree_level %}
+                {% for _ in ''|ljust:cat.tree_level %}
+                  <span style="color:var(--text-muted);">↳&nbsp;</span>
+                {% endfor %}
+              {% endif %}
+              {{ cat.name }}
+            </strong>
+            {% if cat.parent %}
+            <br><small style="color:var(--text-muted);">Parent: {{ cat.parent.name }}</small>
+            {% endif %}
+            {% if cat.description %}<br><small style="color:var(--text-muted);">{{ cat.description|truncatechars:50 }}</small>{% endif %}
+          </td>
+          <td><span style="color:var(--gold);">{{ cat.product_count }}</span></td>
+          <td style="color:var(--text-muted);">{{ cat.child_count }}</td>
+          <td style="color:var(--text-muted);">{{ cat.category_attribute_count }}</td>
+          <td style="color:var(--text-muted);">{{ cat.order }}</td>
+          <td>
+            <span style="color:{% if cat.is_active %}#75d98f{% else %}#f27680{% endif %};">
+              {% if cat.is_active %}✓ Active{% else %}✗ Hidden{% endif %}
+            </span>
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{% url 'admin_panel:category_edit' cat.pk %}" class="btn btn-outline-cafe btn-sm">Edit</a>
+              <a href="{% url 'admin_panel:category_delete' cat.pk %}" class="btn btn-del btn-sm">Del</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:3rem;">No categories yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

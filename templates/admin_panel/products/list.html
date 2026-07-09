@@ -1,0 +1,97 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block title %}Products — Admin{% endblock %}
+{% block page_title %}Products{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 style="color:var(--cream);margin:0;">All Products</h4>
+    <small style="color:var(--text-muted);">{{ products.count }} total</small>
+  </div>
+  <a href="{% url 'admin_panel:product_create' %}" class="btn btn-cafe"><i class="fas fa-plus me-2"></i>Add Product</a>
+</div>
+
+<!-- Filters -->
+<div class="cafe-card p-3 mb-4">
+  <form method="get" class="row g-2 align-items-center">
+    <div class="col-md-4">
+      <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search products...">
+    </div>
+    <div class="col-md-3">
+      <select name="category" class="form-select">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+        <option value="{{ cat.pk }}" {% if category_id == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.indented_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-cafe btn-sm px-3">Filter</button>
+      <a href="{% url 'admin_panel:product_list' %}" class="btn btn-outline-cafe btn-sm px-3 ms-1">Clear</a>
+    </div>
+  </form>
+</div>
+
+<div class="cafe-card">
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Product</th><th>Category</th><th>Price</th><th>Stock</th>
+          <th>Badges</th><th>Available</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-3">
+              <div style="width:45px;height:45px;background:linear-gradient(135deg,var(--roast),var(--espresso));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;overflow:hidden;flex-shrink:0;">
+                {% if product.image %}<img src="{{ product.image.url }}" style="width:100%;height:100%;object-fit:cover;">{% else %}☕{% endif %}
+              </div>
+              <div>
+                <p style="color:var(--cream);font-weight:600;margin:0;font-size:.9rem;">{{ product.name }}</p>
+                <small style="color:var(--text-muted);">{{ product.description|truncatechars:45 }}</small>
+              </div>
+            </div>
+          </td>
+          <td><small style="color:var(--text-muted);">{{ product.category.full_path|default:"—" }}</small></td>
+          <td>
+            <span style="color:var(--gold);font-weight:600;">₹{{ product.effective_price }}</span>
+            {% if product.discounted_price %}<br><small style="color:var(--text-muted);text-decoration:line-through;">₹{{ product.price }}</small>{% endif %}
+          </td>
+          <td>
+            {% if product.track_stock %}
+              <span style="color:{% if product.stock < 10 %}#f27680{% else %}#75d98f{% endif %};">{{ product.stock }}</span>
+            {% else %}<small style="color:var(--text-muted);">—</small>{% endif %}
+          </td>
+          <td>
+            <div class="d-flex gap-1 flex-wrap">
+              {% if product.is_featured %}<span class="badge" style="background:rgba(212,168,83,.2);color:var(--gold);font-size:.7rem;">Featured</span>{% endif %}
+              {% if product.is_bestseller %}<span class="badge" style="background:rgba(220,53,69,.15);color:#f27680;font-size:.7rem;">🔥</span>{% endif %}
+              {% if product.is_new %}<span class="badge" style="background:rgba(40,167,69,.15);color:#75d98f;font-size:.7rem;">New</span>{% endif %}
+              {% if product.is_vegetarian %}<span class="badge" style="background:rgba(40,167,69,.1);color:#75d98f;font-size:.7rem;">🌿</span>{% endif %}
+            </div>
+          </td>
+          <td>
+            <form method="post" action="{% url 'admin_panel:product_toggle' product.pk %}">
+              {% csrf_token %}
+              <button class="btn btn-sm" style="background:{% if product.is_available %}rgba(40,167,69,.15);color:#75d98f;border:1px solid rgba(40,167,69,.3){% else %}rgba(220,53,69,.15);color:#f27680;border:1px solid rgba(220,53,69,.3){% endif %};border-radius:8px;font-size:.78rem;padding:.25rem .65rem;">
+                {% if product.is_available %}✓ Active{% else %}✗ Hidden{% endif %}
+              </button>
+            </form>
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{% url 'admin_panel:product_edit' product.pk %}" class="btn btn-outline-cafe btn-sm">Edit</a>
+              <a href="{% url 'admin_panel:product_delete' product.pk %}" class="btn btn-del btn-sm">Del</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:3rem;">No products found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'base/base.html' %}
+{% block title %}My Rewards — Brew & Bliss{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <!-- Tier Card -->
+      <div class="cafe-card p-4 text-center">
+        <div style="font-size:3rem;margin-bottom:.5rem;">
+          {% if loyalty.tier == 'platinum' %}💎{% elif loyalty.tier == 'gold' %}🥇{% elif loyalty.tier == 'silver' %}🥈{% else %}🥉{% endif %}
+        </div>
+        <h3 style="color:var(--gold);">{{ loyalty.tier|title }}</h3>
+        <p style="color:var(--text-muted);">Member</p>
+        <div style="background:rgba(212,168,83,.1);border-radius:12px;padding:1rem;margin:1rem 0;">
+          <div style="font-size:2rem;font-weight:700;color:var(--gold);">{{ loyalty.points }}</div>
+          <small style="color:var(--text-muted);">Available Points</small>
+        </div>
+        <small style="color:var(--text-muted);">Total earned: {{ loyalty.total_points_earned }} pts</small>
+        {% if loyalty.points_to_next_tier %}
+        <div class="mt-3">
+          <small style="color:var(--text-muted);">{{ loyalty.points_to_next_tier }} pts to next tier</small>
+          <div style="background:rgba(255,255,255,.05);border-radius:4px;height:6px;margin-top:.5rem;overflow:hidden;">
+            <div style="background:var(--gold);height:100%;border-radius:4px;width:{% widthratio loyalty.total_points_earned loyalty.points_to_next_tier 100 %}%;max-width:100%;"></div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <!-- How to Earn -->
+      <div class="cafe-card p-4 mb-4">
+        <h5 style="color:var(--cream);margin-bottom:1rem;">How to Earn Points</h5>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div style="text-align:center;padding:1rem;background:rgba(255,255,255,.02);border-radius:12px;">
+              <div style="font-size:1.5rem;">🛒</div>
+              <p style="color:var(--cream);font-weight:600;margin:.5rem 0 .2rem;">Every Order</p>
+              <small style="color:var(--text-muted);">1 pt per ₹10 spent</small>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div style="text-align:center;padding:1rem;background:rgba(255,255,255,.02);border-radius:12px;">
+              <div style="font-size:1.5rem;">⭐</div>
+              <p style="color:var(--cream);font-weight:600;margin:.5rem 0 .2rem;">Write Reviews</p>
+              <small style="color:var(--text-muted);">Coming soon</small>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div style="text-align:center;padding:1rem;background:rgba(255,255,255,.02);border-radius:12px;">
+              <div style="font-size:1.5rem;">🎂</div>
+              <p style="color:var(--cream);font-weight:600;margin:.5rem 0 .2rem;">Birthday Bonus</p>
+              <small style="color:var(--text-muted);">2× pts on birthday</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Current Benefits -->
+      <div class="cafe-card p-4">
+        <h5 style="color:var(--cream);margin-bottom:1rem;">Your {{ loyalty.tier|title }} Benefits</h5>
+        <ul class="list-unstyled">
+          {% for benefit in benefits %}
+          <li class="d-flex align-items-center gap-2 mb-2">
+            <span style="color:var(--gold);">✓</span>
+            <span style="color:var(--cream);">{{ benefit }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+  <!-- All Tiers -->
+  <div class="mt-4">
+    <h4 style="color:var(--cream);margin-bottom:1.5rem;">All Membership Tiers</h4>
+    <div class="row g-3">
+      {% for tier, tier_benefits in all_benefits.items %}
+      <div class="col-md-3">
+        <div class="cafe-card p-4 {% if loyalty.tier == tier %}border border-warning{% endif %}">
+          <div style="text-align:center;margin-bottom:1rem;">
+            <div style="font-size:2rem;">{% if tier == 'platinum' %}💎{% elif tier == 'gold' %}🥇{% elif tier == 'silver' %}🥈{% else %}🥉{% endif %}</div>
+            <h6 style="color:{% if loyalty.tier == tier %}var(--gold){% else %}var(--cream){% endif %};">{{ tier|title }}</h6>
+            <small style="color:var(--text-muted);">{% if tier == 'bronze' %}0{% elif tier == 'silver' %}500{% elif tier == 'gold' %}2000{% else %}5000{% endif %}+ pts</small>
+          </div>
+          <ul class="list-unstyled mb-0">
+            {% for b in tier_benefits %}
+            <li style="color:var(--text-muted);font-size:.82rem;margin-bottom:.3rem;">• {{ b }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block title %}Analytics — Admin{% endblock %}
+{% block page_title %}Analytics{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="icon" style="background:rgba(212,168,83,.15);color:var(--gold);">💰</div>
+      <div class="value">₹{{ total_revenue|floatformat:0 }}</div>
+      <div class="label">All-time Revenue</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="icon" style="background:rgba(40,167,69,.15);color:#75d98f;">📊</div>
+      <div class="value">₹{{ avg_order_value|floatformat:0 }}</div>
+      <div class="label">Avg Order Value</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="icon" style="background:rgba(23,162,184,.15);color:#6ee3f5;">🏆</div>
+      <div class="value">{{ top_categories.first.name|default:"—" }}</div>
+      <div class="label">Top Category</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="cafe-card p-4">
+      <h5 style="color:var(--cream);margin-bottom:1.5rem;">Monthly Revenue (Last 12 Months)</h5>
+      <canvas id="monthlyChart" height="120"></canvas>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="cafe-card p-4">
+      <h5 style="color:var(--cream);margin-bottom:1rem;">Top Categories</h5>
+      {% for cat in top_categories %}
+      <div class="mb-3">
+        <div class="d-flex justify-content-between mb-1">
+          <span style="color:var(--cream);font-size:.9rem;">{{ cat.name }}</span>
+          <span style="color:var(--gold);font-size:.9rem;">{{ cat.total_orders }}</span>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border-radius:4px;height:6px;overflow:hidden;">
+          <div style="background:var(--gold);height:100%;border-radius:4px;width:{% widthratio cat.total_orders top_categories.first.total_orders 100 %}%;"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const data = {{ monthly_data|safe }};
+new Chart(document.getElementById('monthlyChart'), {
+  type: 'bar',
+  data: {
+    labels: data.map(d => d.month),
+    datasets: [{
+      label: 'Revenue (₹)',
+      data: data.map(d => d.revenue),
+      backgroundColor: 'rgba(212,168,83,0.3)',
+      borderColor: '#d4a853',
+      borderWidth: 1,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { labels: { color: '#a07860' } } },
+    scales: {
+      x: { ticks: { color: '#a07860' }, grid: { color: 'rgba(200,149,108,0.07)' } },
+      y: { ticks: { color: '#a07860' }, grid: { color: 'rgba(200,149,108,0.07)' } }
+    }
+  }
+});
+</script>
+{% endblock %}

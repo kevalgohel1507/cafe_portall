@@ -1,0 +1,32 @@
+{% extends 'base/base.html' %}
+{% block title %}Order Confirmed — Brew & Bliss{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:700px;">
+  <div class="cafe-card p-5 text-center">
+    <div style="font-size:4rem;margin-bottom:1rem;">✅</div>
+    <h2 class="section-title">Order Confirmed!</h2>
+    <p style="color:var(--text-muted);">Your order has been received and is being prepared.</p>
+    <div style="background:rgba(212,168,83,.1);border:1px solid rgba(212,168,83,.2);border-radius:12px;padding:1.5rem;margin:1.5rem 0;">
+      <div class="row g-3 text-start">
+        <div class="col-6"><small style="color:var(--text-muted);">Order Number</small><p style="color:var(--gold);font-weight:700;margin:0;">#{{ order.order_number }}</p></div>
+        <div class="col-6"><small style="color:var(--text-muted);">Total Amount</small><p style="color:var(--cream);font-weight:700;margin:0;">₹{{ order.total_amount }}</p></div>
+        <div class="col-6"><small style="color:var(--text-muted);">Order Type</small><p style="color:var(--cream);margin:0;">{{ order.get_order_type_display }}</p></div>
+        <div class="col-6"><small style="color:var(--text-muted);">Payment</small><p style="color:var(--cream);margin:0;">{{ order.get_payment_method_display }}</p></div>
+      </div>
+      <hr style="border-color:var(--border);opacity:.35;">
+      <div class="text-start" style="font-size:.9rem;">
+        <div class="d-flex justify-content-between"><span style="color:var(--text-muted);">Subtotal</span><span style="color:var(--cream);">₹{{ order.subtotal }}</span></div>
+        <div class="d-flex justify-content-between"><span style="color:var(--text-muted);">Platform Fee (5%)</span><span style="color:var(--cream);">₹{{ order.platform_fee }}</span></div>
+        <div class="d-flex justify-content-between"><span style="color:var(--text-muted);">GST on Platform Fee (18%)</span><span style="color:var(--cream);">₹{{ order.platform_fee_tax }}</span></div>
+      </div>
+    </div>
+    {% if order.loyalty_points_earned %}
+    <p style="color:#75d98f;font-size:.9rem;">🌟 You earned {{ order.loyalty_points_earned }} loyalty points on this order!</p>
+    {% endif %}
+    <div class="d-flex gap-3 justify-content-center mt-3 flex-wrap">
+      <a href="{% url 'orders:order_detail' order.pk %}" class="btn btn-cafe">View Order Details</a>
+      <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-cafe">Continue Shopping</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

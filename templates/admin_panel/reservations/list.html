@@ -1,0 +1,107 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block title %}Reservations — Admin{% endblock %}
+{% block page_title %}Reservations{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h4 style="color:var(--cream);margin:0;">All Reservations</h4>
+</div>
+
+<div class="cafe-card p-3 mb-4">
+  <form method="get" class="row g-2 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label">Date</label>
+      <input type="date" name="date" class="form-control" value="{{ selected_date }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Cafe</label>
+      <select name="location" class="form-select">
+        <option value="">All Cafes</option>
+        {% for code, label in location_choices %}
+        <option value="{{ code }}" {% if selected_location == code %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3 d-flex gap-2">
+      <button class="btn btn-cafe">Apply</button>
+      <a href="{% url 'admin_panel:reservation_list' %}" class="btn btn-outline-cafe">Reset</a>
+    </div>
+  </form>
+</div>
+
+<div class="cafe-card p-3 mb-4">
+  <h6 style="color:var(--cream);">Daily Table View ({{ grid_date }} · {{ grid_location|title }})</h6>
+  <div class="row g-2 mt-1">
+    {% for row in slot_grid %}
+    <div class="col-md-3 col-sm-4 col-6">
+      <div class="p-2" style="border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.02);">
+        <small style="color:var(--text-muted);">{{ row.slot }}</small>
+        <div style="color:var(--cream);font-weight:600;">{{ row.booked }}/{{ row.capacity }} tables</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="cafe-card">
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Reference</th>
+          <th>Guest</th>
+          <th>Cafe</th>
+          <th>Date & Slot</th>
+          <th>Guests</th>
+          <th>Occasion</th>
+          <th>Status</th>
+          <th>Update</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in reservations %}
+        <tr>
+          <td style="color:var(--gold);font-weight:700;">{{ r.booking_reference }}</td>
+          <td>
+            <p style="color:var(--cream);font-weight:600;margin:0;">{{ r.name }}</p>
+            <small style="color:var(--text-muted);">{{ r.email }} | {{ r.phone }}</small>
+          </td>
+          <td style="color:var(--cream);">{{ r.get_cafe_location_display }}</td>
+          <td>
+            <p style="color:var(--cream);margin:0;">{{ r.date|date:"d M Y" }}</p>
+            <small style="color:var(--text-muted);">{{ r.time_slot }}</small>
+          </td>
+          <td style="color:var(--cream);">{{ r.guests }}</td>
+          <td style="color:var(--text-muted);">{{ r.occasion|default:"—" }}</td>
+          <td>
+            <span class="badge" style="border-radius:8px;padding:.3rem .75rem;
+              {% if r.status == 'confirmed' %}background:rgba(40,167,69,.2);color:#75d98f;
+              {% elif r.status == 'cancelled' %}background:rgba(220,53,69,.2);color:#f27680;
+              {% elif r.status == 'completed' %}background:rgba(23,162,184,.2);color:#6ee3f5;
+              {% elif r.status == 'no_show' %}background:rgba(220,120,53,.2);color:#ffb080;
+              {% else %}background:rgba(255,193,7,.2);color:#ffd84d;{% endif %}">
+              {{ r.get_status_display }}
+            </span>
+          </td>
+          <td>
+            <form method="post" action="{% url 'admin_panel:reservation_status' r.pk %}" class="d-flex gap-1">
+              {% csrf_token %}
+              <select name="status" class="form-select form-select-sm" style="min-width:128px;">
+                <option value="pending" {% if r.status == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="confirmed" {% if r.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                <option value="completed" {% if r.status == 'completed' %}selected{% endif %}>Completed</option>
+                <option value="no_show" {% if r.status == 'no_show' %}selected{% endif %}>No Show</option>
+                <option value="cancelled" {% if r.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+              </select>
+              <button class="btn btn-cafe btn-sm">?</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:3rem;">No reservations found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

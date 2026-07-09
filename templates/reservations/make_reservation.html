@@ -1,0 +1,294 @@
+{% extends 'base/base.html' %}
+{% block title %}Reserve Table — Brew & Bliss{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width:900px;">
+  <div class="cafe-card p-4 p-md-5 mb-4" style="background:linear-gradient(140deg,rgba(44,24,16,.95),rgba(26,12,6,.92));border:1px solid var(--border);">
+    <p style="color:var(--gold);letter-spacing:1px;font-size:.78rem;text-transform:uppercase;margin-bottom:.35rem;">Brew & Bliss Reservations</p>
+    <h1 style="font-family:'Playfair Display',serif;color:var(--cream);margin:0;">Book your perfect spot</h1>
+    <p style="color:var(--text-muted);margin:.7rem 0 0;max-width:620px;">Pick your city, choose a time slot, review details, and confirm in seconds.</p>
+  </div>
+
+  {% if form.errors %}
+  <div class="alert alert-danger" style="border-radius:12px;">
+    Please fix the highlighted reservation details and continue.
+  </div>
+  {% endif %}
+
+  {% if user.is_authenticated %}
+  <div class="cafe-card p-3 mb-3" style="border:1px solid rgba(117,217,143,.35);background:rgba(40,167,69,.08);">
+    <small style="color:#9be8ae;">Details pre-filled from your profile. You can still edit before confirming.</small>
+  </div>
+  {% else %}
+  <div class="cafe-card p-3 mb-3" style="border:1px solid rgba(255,193,7,.35);background:rgba(255,193,7,.08);">
+    <small style="color:#ffd978;">You can reserve as guest, or <a href="{% url 'accounts:login' %}?next={% url 'reservations:make_reservation' %}" style="color:var(--gold);font-weight:600;">log in</a> for faster booking.</small>
+  </div>
+  {% endif %}
+
+  <div class="d-flex flex-wrap gap-2 mb-4" id="wizardProgress">
+    <span class="badge rounded-pill px-3 py-2 step-pill active" data-step-pill="1">1. Cafe & Slot</span>
+    <span class="badge rounded-pill px-3 py-2 step-pill" data-step-pill="2">2. Your Details</span>
+    <span class="badge rounded-pill px-3 py-2 step-pill" data-step-pill="3">3. Review</span>
+  </div>
+
+  <form method="post" id="reservationWizardForm" class="cafe-card p-4">
+    {% csrf_token %}
+
+    <section class="wizard-step" data-step="1">
+      <h5 style="color:var(--cream);">Step 1 — Pick Your Cafe & Date</h5>
+      <div class="row g-3 mt-1">
+        <div class="col-md-6">
+          <label class="form-label">Cafe Location *</label>
+          {{ form.cafe_location }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Date *</label>
+          {{ form.date }}
+          <small id="blockedDateWarning" style="color:#f8b2b2;display:none;">This date is fully booked. Please choose another day.</small>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Time Slot *</label>
+          {{ form.time_slot }}
+          <small style="color:var(--text-muted);">Slots are live and each slot allows up to {{ slot_capacity }} tables.</small>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Guests *</label>
+          {{ form.guests }}
+          <small id="largeGroupHint" style="color:#ffd978;display:none;">10+ guests is treated as a large-group inquiry.</small>
+        </div>
+      </div>
+
+      <div class="mt-3" id="blockedDatesInfo" style="color:var(--text-muted);font-size:.85rem;"></div>
+      <div class="d-flex justify-content-end mt-4">
+        <button type="button" class="btn btn-cafe px-4" data-next-step="2">Next ?</button>
+      </div>
+    </section>
+
+    <section class="wizard-step" data-step="2" style="display:none;">
+      <h5 style="color:var(--cream);">Step 2 — Your Details</h5>
+      <div class="row g-3 mt-1">
+        <div class="col-md-6">
+          <label class="form-label">Full Name *</label>
+          {{ form.name }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Phone *</label>
+          {{ form.phone }}
+        </div>
+        <div class="col-12">
+          <label class="form-label">Email *</label>
+          {{ form.email }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Occasion</label>
+          {{ form.occasion }}
+        </div>
+        <div class="col-12">
+          <label class="form-label">Special Requests</label>
+          {{ form.special_requests }}
+        </div>
+      </div>
+      <div class="d-flex justify-content-between mt-4">
+        <button type="button" class="btn btn-outline-cafe px-4" data-prev-step="1">? Back</button>
+        <button type="button" class="btn btn-cafe px-4" data-next-step="3">Next ?</button>
+      </div>
+    </section>
+
+    <section class="wizard-step" data-step="3" style="display:none;">
+      <h5 style="color:var(--cream);">Step 3 — Review & Confirm</h5>
+      <div class="cafe-card p-3 mt-3" style="background:rgba(255,255,255,.03);border:1px solid var(--border);">
+        <div class="row g-2">
+          <div class="col-md-6"><small style="color:var(--text-muted);">Cafe</small><p id="summaryCafe" style="color:var(--cream);margin:0;"></p></div>
+          <div class="col-md-6"><small style="color:var(--text-muted);">Date</small><p id="summaryDate" style="color:var(--cream);margin:0;"></p></div>
+          <div class="col-md-6"><small style="color:var(--text-muted);">Time Slot</small><p id="summaryTime" style="color:var(--cream);margin:0;"></p></div>
+          <div class="col-md-6"><small style="color:var(--text-muted);">Guests</small><p id="summaryGuests" style="color:var(--cream);margin:0;"></p></div>
+          <div class="col-md-6"><small style="color:var(--text-muted);">Name</small><p id="summaryName" style="color:var(--cream);margin:0;"></p></div>
+          <div class="col-md-6"><small style="color:var(--text-muted);">Email</small><p id="summaryEmail" style="color:var(--cream);margin:0;"></p></div>
+          <div class="col-12"><small style="color:var(--text-muted);">Special Requests</small><p id="summaryRequests" style="color:var(--cream);margin:0;white-space:pre-wrap;"></p></div>
+        </div>
+      </div>
+      <div class="d-flex justify-content-between mt-4">
+        <button type="button" class="btn btn-outline-cafe px-4" data-prev-step="2">? Back</button>
+        <button type="submit" class="btn btn-cafe px-4">Confirm Reservation</button>
+      </div>
+    </section>
+  </form>
+</div>
+
+{{ blocked_dates|json_script:'blocked-dates-initial' }}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  (function() {
+    const form = document.getElementById('reservationWizardForm');
+    const steps = Array.from(document.querySelectorAll('.wizard-step'));
+    const pills = Array.from(document.querySelectorAll('[data-step-pill]'));
+
+    const locationInput = document.getElementById('id_cafe_location');
+    const dateInput = document.getElementById('id_date');
+    const slotInput = document.getElementById('id_time_slot');
+    const guestsInput = document.getElementById('id_guests');
+    const blockedDateWarning = document.getElementById('blockedDateWarning');
+    const blockedDatesInfo = document.getElementById('blockedDatesInfo');
+    const largeGroupHint = document.getElementById('largeGroupHint');
+    const initialBlockedNode = document.getElementById('blocked-dates-initial');
+
+    let blockedDates = [];
+    try {
+      blockedDates = JSON.parse(initialBlockedNode.textContent || '[]');
+    } catch (error) {
+      blockedDates = [];
+    }
+
+    function showStep(stepNumber) {
+      steps.forEach(step => {
+        step.style.display = String(step.dataset.step) === String(stepNumber) ? 'block' : 'none';
+      });
+      pills.forEach(pill => {
+        const active = Number(pill.dataset.stepPill) === Number(stepNumber);
+        pill.classList.toggle('active', active);
+        pill.style.background = active ? 'rgba(212,168,83,.25)' : 'rgba(255,255,255,.06)';
+        pill.style.color = active ? 'var(--gold)' : 'var(--text-muted)';
+      });
+      if (stepNumber === 3) {
+        syncSummary();
+      }
+    }
+
+    function formatDate(dateValue) {
+      if (!dateValue) return '';
+      const parsed = new Date(dateValue + 'T00:00:00');
+      return parsed.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    function syncSummary() {
+      const selectedLocation = locationInput.options[locationInput.selectedIndex];
+      document.getElementById('summaryCafe').textContent = selectedLocation ? selectedLocation.text : '-';
+      document.getElementById('summaryDate').textContent = formatDate(dateInput.value) || '-';
+      document.getElementById('summaryTime').textContent = slotInput.value || '-';
+      document.getElementById('summaryGuests').textContent = (guestsInput.value || '-') + ' guests';
+      document.getElementById('summaryName').textContent = document.getElementById('id_name').value || '-';
+      document.getElementById('summaryEmail').textContent = document.getElementById('id_email').value || '-';
+      document.getElementById('summaryRequests').textContent = document.getElementById('id_special_requests').value || 'No special requests';
+    }
+
+    function validateStep(stepNumber) {
+      const requiredByStep = {
+        1: [locationInput, dateInput, slotInput, guestsInput],
+        2: [document.getElementById('id_name'), document.getElementById('id_email'), document.getElementById('id_phone')],
+      };
+      const requiredInputs = requiredByStep[stepNumber] || [];
+      let isValid = true;
+
+      requiredInputs.forEach(input => {
+        if (!input || String(input.value || '').trim()) {
+          return;
+        }
+        input.focus();
+        input.style.borderColor = '#f27680';
+        isValid = false;
+      });
+
+      if (stepNumber === 1 && blockedDates.includes(dateInput.value)) {
+        blockedDateWarning.style.display = 'block';
+        isValid = false;
+      }
+
+      return isValid;
+    }
+
+    function updateSlotOptions(slots) {
+      const current = slotInput.value;
+      slotInput.innerHTML = '<option value="">Select available slot</option>';
+      slots.forEach(slot => {
+        const option = document.createElement('option');
+        option.value = slot.value;
+        option.textContent = slot.label + (slot.is_available ? (' (' + slot.remaining_tables + ' tables left)') : ' (Fully booked)');
+        option.disabled = !slot.is_available;
+        if (slot.value === current && slot.is_available) {
+          option.selected = true;
+        }
+        slotInput.appendChild(option);
+      });
+    }
+
+    function updateBlockedDateHint() {
+      if (!blockedDates.length) {
+        blockedDatesInfo.textContent = '';
+        return;
+      }
+      blockedDatesInfo.textContent = 'Fully booked dates in selected cafe: ' + blockedDates.slice(0, 6).join(', ') + (blockedDates.length > 6 ? '...' : '');
+    }
+
+    function fetchAvailability() {
+      const location = locationInput.value;
+      const date = dateInput.value;
+      if (!location) {
+        return;
+      }
+
+      const query = new URLSearchParams({ cafe_location: location, date: date });
+      fetch('{% url "reservations:reservation_availability" %}?' + query.toString(), {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      })
+        .then(response => response.json())
+        .then(data => {
+          blockedDates = Array.isArray(data.blocked_dates) ? data.blocked_dates : [];
+          updateBlockedDateHint();
+
+          if (blockedDates.includes(date)) {
+            blockedDateWarning.style.display = 'block';
+            slotInput.innerHTML = '<option value="">Date is fully booked</option>';
+            return;
+          }
+          blockedDateWarning.style.display = 'none';
+
+          const slots = Array.isArray(data.slots) ? data.slots : [];
+          updateSlotOptions(slots);
+        })
+        .catch(() => {
+          slotInput.innerHTML = '<option value="">Unable to load slots</option>';
+        });
+    }
+
+    const today = new Date();
+    const isoToday = today.toISOString().split('T')[0];
+    dateInput.setAttribute('min', isoToday);
+
+    guestsInput.addEventListener('input', function() {
+      const value = Number(this.value || 0);
+      largeGroupHint.style.display = value > 10 ? 'block' : 'none';
+    });
+
+    locationInput.addEventListener('change', fetchAvailability);
+    dateInput.addEventListener('change', fetchAvailability);
+
+    document.querySelectorAll('[data-next-step]').forEach(button => {
+      button.addEventListener('click', function() {
+        const currentStep = Number(this.closest('.wizard-step').dataset.step);
+        if (!validateStep(currentStep)) {
+          return;
+        }
+        showStep(Number(this.dataset.nextStep));
+      });
+    });
+
+    document.querySelectorAll('[data-prev-step]').forEach(button => {
+      button.addEventListener('click', function() {
+        showStep(Number(this.dataset.prevStep));
+      });
+    });
+
+    form.addEventListener('submit', function(event) {
+      if (!validateStep(1) || !validateStep(2)) {
+        event.preventDefault();
+      }
+    });
+
+    updateBlockedDateHint();
+    fetchAvailability();
+    showStep(1);
+  })();
+</script>
+{% endblock %}

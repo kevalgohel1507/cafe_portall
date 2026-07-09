@@ -1,0 +1,35 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block title %}Attributes — Admin{% endblock %}
+{% block page_title %}Attributes{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 style="color:var(--cream);margin:0;">Attributes</h4>
+  <a href="{% url 'admin_panel:attribute_create' %}" class="btn btn-cafe"><i class="fas fa-plus me-2"></i>Add Attribute</a>
+</div>
+<div class="cafe-card">
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr><th>Name</th><th>Description</th><th>Used In Categories</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for attr in attributes %}
+        <tr>
+          <td style="color:var(--cream);font-weight:600;">{{ attr.name }}</td>
+          <td style="color:var(--text-muted);">{{ attr.description|default:'—' }}</td>
+          <td style="color:var(--gold);">{{ attr.category_count }}</td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{% url 'admin_panel:attribute_edit' attr.pk %}" class="btn btn-outline-cafe btn-sm">Edit</a>
+              <a href="{% url 'admin_panel:attribute_delete' attr.pk %}" class="btn btn-del btn-sm">Del</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:3rem;">No attributes yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

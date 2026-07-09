@@ -1,0 +1,709 @@
+{% extends 'base/base.html' %}
+{% block title %}Login — Brew & Bliss{% endblock %}
+
+{% block extra_styles %}
+
+/* ══════════════════════════════════════
+   LOGIN PAGE
+══════════════════════════════════════ */
+
+.login-wrapper {
+  min-height: calc(100vh - 72px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  position: relative;
+}
+
+/* Ambient radial glow */
+.login-wrapper::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 700px; height: 500px;
+  background: radial-gradient(ellipse at center, rgba(212,168,83,0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Auth Card ── */
+.auth-card {
+  width: 100%;
+  max-width: 460px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 2.8rem 2.6rem;
+  position: relative;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.45);
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Top gold accent line */
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 80px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  border-radius: 2px;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Header ── */
+.auth-header { text-align: center; margin-bottom: 2rem; }
+
+/* ── Animated Logo ── */
+.logo-wrap {
+  display: inline-block;
+  margin-bottom: 1.1rem;
+  animation: iconPop 0.6s 0.1s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  position: relative;
+}
+@keyframes iconPop {
+  from { opacity:0; transform: scale(0.6) rotate(-8deg); }
+  to   { opacity:1; transform: scale(1) rotate(0deg); }
+}
+
+/* Outer glow ring */
+.logo-ring {
+  width: 88px; height: 88px;
+  border-radius: 26px;
+  background: rgba(212,168,83,0.08);
+  border: 1.5px solid rgba(212,168,83,0.2);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  box-shadow:
+    0 0 0 0 rgba(212,168,83,0.3),
+    0 8px 32px rgba(0,0,0,0.35);
+  animation: ringPulse 3s 1s ease-in-out infinite;
+}
+@keyframes ringPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(212,168,83,0.25), 0 8px 32px rgba(0,0,0,0.35); }
+  50%      { box-shadow: 0 0 0 10px rgba(212,168,83,0), 0 8px 32px rgba(0,0,0,0.35); }
+}
+
+/* The SVG itself */
+.logo-svg { width: 52px; height: 52px; overflow: visible; }
+
+/* Cup body */
+.cup-body {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* Cup saucer */
+.cup-saucer {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+/* Handle */
+.cup-handle {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+/* Coffee liquid inside */
+.cup-liquid {
+  fill: rgba(212,168,83,0.18);
+  animation: liquidRise 1.2s 0.4s cubic-bezier(0.34,1.2,0.64,1) both;
+  transform-origin: center bottom;
+}
+@keyframes liquidRise {
+  from { opacity:0; transform: scaleY(0); }
+  to   { opacity:1; transform: scaleY(1); }
+}
+
+/* Steam lines */
+.steam {
+  fill: none;
+  stroke: rgba(212,168,83,0.55);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  animation: steamRise 2.4s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+.steam-1 { animation-delay: 0s;    animation-duration: 2.4s; }
+.steam-2 { animation-delay: 0.5s;  animation-duration: 2.2s; }
+.steam-3 { animation-delay: 1s;    animation-duration: 2.6s; }
+
+@keyframes steamRise {
+  0%   { opacity: 0;   transform: translateY(0)   scaleX(1); }
+  20%  { opacity: 0.7; }
+  60%  { opacity: 0.4; transform: translateY(-9px) scaleX(1.15); }
+  100% { opacity: 0;   transform: translateY(-16px) scaleX(0.8); }
+}
+
+/* Sparkle dots around the logo */
+.sparkle {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: sparklePop 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+.sp1 { width:5px; height:5px; top:-4px; right:6px;   animation-delay:0s;    opacity:0; }
+.sp2 { width:4px; height:4px; top:6px;  right:-5px;  animation-delay:0.7s;  opacity:0; }
+.sp3 { width:3px; height:3px; bottom:4px; left:-4px; animation-delay:1.4s;  opacity:0; }
+.sp4 { width:4px; height:4px; bottom:-3px; right:10px; animation-delay:2.1s; opacity:0; }
+
+@keyframes sparklePop {
+  0%,100% { opacity:0; transform: scale(0); }
+  30%     { opacity:1; transform: scale(1); }
+  60%     { opacity:0.5; transform: scale(0.6); }
+}
+
+/* B&B monogram badge */
+.logo-badge {
+  position: absolute;
+  bottom: -6px; right: -6px;
+  width: 22px; height: 22px;
+  background: var(--gold);
+  border-radius: 8px;
+  border: 2px solid var(--card-bg);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 0.55rem; font-weight: 700;
+  color: var(--espresso);
+  letter-spacing: -0.5px;
+  animation: badgePop 0.5s 0.7s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes badgePop {
+  from { opacity:0; transform: scale(0) rotate(-20deg); }
+  to   { opacity:1; transform: scale(1) rotate(0deg); }
+}
+
+.auth-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.75rem; font-weight: 700;
+  color: var(--cream); margin-bottom: 0.3rem;
+}
+.auth-sub { font-size: 0.85rem; color: var(--text-muted); }
+
+/* ── Non-field error banner ── */
+.auth-error-banner {
+  background: rgba(220,53,69,0.1);
+  border: 1px solid rgba(220,53,69,0.3);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  animation: errorIn 0.25s ease forwards;
+}
+.auth-error-banner i {
+  color: #f27680;
+  font-size: 0.85rem;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.auth-error-banner .err-text {
+  font-size: 0.82rem;
+  color: #f27680;
+  line-height: 1.5;
+}
+@keyframes errorIn {
+  from { opacity:0; transform: translateY(-6px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+/* ── Field Group ── */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+.field-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.field-label .required-dot {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--gold);
+  display: inline-block;
+}
+
+/* ── Input Wrap ── */
+.input-wrap { position: relative; }
+
+.input-icon {
+  position: absolute;
+  left: 13px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  pointer-events: none;
+  transition: color 0.2s;
+  z-index: 1;
+}
+.field-group:focus-within .input-icon { color: var(--gold); }
+
+/* The input itself */
+.field-group input,
+.field-group select {
+  width: 100% !important;
+  background: rgba(255,255,255,0.04) !important;
+  border: 1.5px solid var(--border) !important;
+  border-radius: 12px !important;
+  color: var(--cream) !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 0.9rem !important;
+  padding: 0.75rem 1rem 0.75rem 2.4rem !important;
+  outline: none !important;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s !important;
+  -webkit-appearance: none !important;
+}
+.field-group input::placeholder { color: rgba(160,120,96,0.4) !important; }
+.field-group input:focus,
+.field-group select:focus {
+  border-color: var(--gold) !important;
+  background: rgba(255,255,255,0.07) !important;
+  box-shadow: 0 0 0 3px rgba(212,168,83,0.12) !important;
+}
+
+/* Password toggle */
+.pw-toggle {
+  position: absolute;
+  right: 12px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none;
+  color: var(--text-muted); cursor: pointer;
+  font-size: 0.78rem; padding: 2px;
+  transition: color 0.2s; z-index: 2;
+}
+.pw-toggle:hover { color: var(--gold); }
+
+/* ── Error State ── */
+.field-group.has-error input,
+.field-group.has-error select {
+  border-color: #e05568 !important;
+  background: rgba(220,53,69,0.05) !important;
+}
+.field-group.has-error input:focus {
+  box-shadow: 0 0 0 3px rgba(220,53,69,0.12) !important;
+}
+.field-group.has-error .input-icon { color: #e05568 !important; }
+
+.field-error-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  font-size: 0.73rem;
+  color: #f27680;
+  line-height: 1.4;
+  margin-top: 2px;
+  animation: errorIn 0.2s ease forwards;
+}
+.field-error-msg i { font-size: 0.65rem; margin-top: 2px; flex-shrink: 0; }
+
+/* ── Valid State ── */
+.field-group.is-valid input {
+  border-color: #3dbd6c !important;
+  background: rgba(40,167,69,0.04) !important;
+}
+.field-group.is-valid input:focus {
+  box-shadow: 0 0 0 3px rgba(40,167,69,0.1) !important;
+}
+.field-group.is-valid .input-icon { color: #3dbd6c !important; }
+.valid-check {
+  position: absolute;
+  right: 12px; top: 50%;
+  transform: translateY(-50%);
+  color: #3dbd6c; font-size: 0.72rem;
+  pointer-events: none;
+}
+
+/* ── Remember + Forgot row ── */
+.login-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  margin-top: -0.2rem;
+}
+.remember-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.remember-label input[type="checkbox"] {
+  width: 15px !important; height: 15px !important;
+  min-width: 15px;
+  border-radius: 4px !important;
+  padding: 0 !important;
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+.remember-label span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.forgot-link {
+  font-size: 0.8rem;
+  color: var(--gold);
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+.forgot-link:hover { opacity: 0.75; text-decoration: underline; }
+
+/* ── Submit Button ── */
+.btn-login {
+  width: 100%;
+  background: var(--gold);
+  color: var(--espresso);
+  border: none;
+  border-radius: 12px;
+  padding: 0.85rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: all 0.22s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.btn-login::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.4s ease;
+}
+.btn-login:hover::before { transform: translateX(100%); }
+.btn-login:hover {
+  background: var(--latte);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(212,168,83,0.25);
+}
+.btn-login:active { transform: translateY(0); }
+
+/* Loading state */
+.btn-login.loading {
+  pointer-events: none;
+  opacity: 0.8;
+}
+.btn-login .spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(44,24,16,0.3);
+  border-top-color: var(--espresso);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: none;
+}
+.btn-login.loading .spinner { display: block; }
+.btn-login.loading .btn-text { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Divider ── */
+.auth-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 1.5rem 0 1rem;
+}
+.auth-divider span { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; }
+.auth-divider::before, .auth-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* ── Footer ── */
+.auth-footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.auth-footer a {
+  color: var(--gold); font-weight: 600;
+  text-decoration: none;
+}
+.auth-footer a:hover { text-decoration: underline; }
+
+/* ── Trust badges ── */
+.trust-strip {
+  display: flex;
+  justify-content: center;
+  gap: 1.4rem;
+  margin-top: 1.6rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.trust-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 0.7rem; color: var(--text-muted);
+}
+.trust-item i { color: var(--gold); font-size: 0.65rem; }
+
+@media (max-width: 480px) {
+  .auth-card { padding: 2rem 1.4rem; }
+}
+
+{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+  <div class="auth-card">
+
+    <!-- Header -->
+    <div class="auth-header">
+
+      <!-- Animated Logo -->
+      <div class="logo-wrap">
+        <div class="logo-ring">
+
+          <!-- Sparkle dots -->
+          <div class="sparkle sp1"></div>
+          <div class="sparkle sp2"></div>
+          <div class="sparkle sp3"></div>
+          <div class="sparkle sp4"></div>
+
+          <!-- Coffee Cup SVG -->
+          <svg class="logo-svg" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+
+            <!-- Steam paths (above cup) -->
+            <path class="steam steam-1" d="M18 14 Q16 10 18 7 Q20 4 18 1"/>
+            <path class="steam steam-2" d="M26 14 Q24 10 26 7 Q28 4 26 1"/>
+            <path class="steam steam-3" d="M34 14 Q32 10 34 7 Q36 4 34 1"/>
+
+            <!-- Coffee liquid (clipped inside cup) -->
+            <path class="cup-liquid" d="M13 22 Q13 32 15 35 L37 35 Q39 32 39 22 Z"/>
+
+            <!-- Cup body (trapezoid) -->
+            <path class="cup-body" d="M11 18 L15 38 Q15.5 40 18 40 L34 40 Q36.5 40 37 38 L41 18 Z"/>
+
+            <!-- Cup rim -->
+            <line class="cup-body" x1="10" y1="18" x2="42" y2="18" stroke-linecap="round"/>
+
+            <!-- Handle -->
+            <path class="cup-handle" d="M41 22 Q50 22 50 30 Q50 38 41 38"/>
+
+            <!-- Saucer -->
+            <ellipse class="cup-saucer" cx="26" cy="43" rx="18" ry="3"/>
+            <line class="cup-saucer" x1="8" y1="46" x2="44" y2="46" stroke-linecap="round"/>
+
+            <!-- Latte art swirl on liquid -->
+            <path d="M19 28 Q23 24 26 27 Q29 30 33 27"
+              fill="none" stroke="rgba(212,168,83,0.5)" stroke-width="1.4"
+              stroke-linecap="round"
+              style="animation: steamRise 3s 0.8s ease-in-out infinite; transform-origin: center;"/>
+
+          </svg>
+
+          <!-- B&B badge -->
+          <div class="logo-badge">B&B</div>
+        </div>
+      </div>
+
+      <h2 class="auth-title">Welcome Back</h2>
+      <p class="auth-sub">Sign in to your Brew & Bliss account</p>
+    </div>
+
+    <!-- Non-field errors (wrong credentials, etc.) -->
+    {% if form.non_field_errors %}
+    <div class="auth-error-banner">
+      <i class="fas fa-exclamation-circle"></i>
+      <div class="err-text">
+        {% for error in form.non_field_errors %}
+        <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Form -->
+    <form method="post" id="loginForm" novalidate>
+      {% csrf_token %}
+
+      <!-- Username / Email -->
+      <div class="field-group {% if form.username.errors %}has-error{% endif %}" id="group_username">
+        <label class="field-label" for="{{ form.username.id_for_label }}">
+          Username or Email <span class="required-dot"></span>
+        </label>
+        <div class="input-wrap">
+          <i class="fas fa-user input-icon"></i>
+          {{ form.username }}
+          <span class="valid-check" id="user_check" style="display:none;"><i class="fas fa-check"></i></span>
+        </div>
+        {% if form.username.errors %}
+        <div class="field-error-msg">
+          <i class="fas fa-exclamation-circle"></i> {{ form.username.errors.0 }}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Password -->
+      <div class="field-group {% if form.password.errors %}has-error{% endif %}" id="group_password">
+        <label class="field-label" for="{{ form.password.id_for_label }}">
+          Password <span class="required-dot"></span>
+        </label>
+        <div class="input-wrap">
+          <i class="fas fa-lock input-icon"></i>
+          {{ form.password }}
+          <button type="button" class="pw-toggle" onclick="togglePw('{{ form.password.id_for_label }}', this)" tabindex="-1">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+        {% if form.password.errors %}
+        <div class="field-error-msg">
+          <i class="fas fa-exclamation-circle"></i> {{ form.password.errors.0 }}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Remember me + Forgot password -->
+      <div class="login-meta">
+        <label class="remember-label">
+          <input type="checkbox" name="remember_me" id="rememberMe">
+          <span>Remember me</span>
+        </label>
+       <a href="#" class="forgot-link">
+  Forgot password?
+</a>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn-login" id="loginBtn">
+        <span class="spinner"></span>
+        <span class="btn-text">
+          <i class="fas fa-sign-in-alt"></i> Sign In
+        </span>
+      </button>
+
+    </form>
+
+    <!-- Trust badges -->
+    <div class="trust-strip">
+      <div class="trust-item"><i class="fas fa-shield-alt"></i> Secure Login</div>
+      <div class="trust-item"><i class="fas fa-lock"></i> Encrypted</div>
+      <div class="trust-item"><i class="fas fa-star"></i> Earn Points</div>
+    </div>
+
+    <!-- Divider -->
+    <div class="auth-divider"><span>New to Brew & Bliss?</span></div>
+
+    <!-- Register link -->
+    <div class="auth-footer">
+      <a href="{% url 'accounts:register' %}">
+        <i class="fas fa-mug-hot" style="font-size:0.8rem;margin-right:4px;"></i>
+        Create a free account
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ══════════════════════════════════════
+//  PASSWORD TOGGLE
+// ══════════════════════════════════════
+function togglePw(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const isText = input.type === 'text';
+  input.type = isText ? 'password' : 'text';
+  btn.querySelector('i').className = isText ? 'fas fa-eye' : 'fas fa-eye-slash';
+}
+
+// ══════════════════════════════════════
+//  LIVE FIELD VALIDATION
+// ══════════════════════════════════════
+const usernameInput = document.getElementById('{{ form.username.id_for_label }}');
+const passwordInput = document.getElementById('{{ form.password.id_for_label }}');
+
+function liveValidate(input, groupId, validator) {
+  if (!input) return;
+  const group = document.getElementById(groupId);
+  const check = group ? group.querySelector('.valid-check') : null;
+
+  function run() {
+    const val = input.value.trim();
+    if (!val) {
+      group.classList.remove('has-error', 'is-valid');
+      if (check) check.style.display = 'none';
+      return;
+    }
+    const valid = validator(val);
+    group.classList.toggle('has-error', !valid);
+    group.classList.toggle('is-valid', valid);
+    if (check) check.style.display = valid ? 'block' : 'none';
+  }
+
+  input.addEventListener('blur', run);
+  input.addEventListener('input', function () {
+    if (group.classList.contains('has-error') || group.classList.contains('is-valid')) run();
+  });
+}
+
+// Username: at least 3 chars
+liveValidate(usernameInput, 'group_username', val => val.length >= 3);
+
+// Password: at least 1 char entered (don't reveal rules on login)
+liveValidate(passwordInput, 'group_password', val => val.length >= 1);
+
+// ══════════════════════════════════════
+//  SUBMIT — loading state + empty guard
+// ══════════════════════════════════════
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+  const uVal = usernameInput ? usernameInput.value.trim() : '';
+  const pVal = passwordInput ? passwordInput.value : '';
+  let hasError = false;
+
+  if (!uVal) {
+    document.getElementById('group_username').classList.add('has-error');
+    usernameInput.focus();
+    hasError = true;
+  }
+  if (!pVal) {
+    document.getElementById('group_password').classList.add('has-error');
+    if (!hasError) passwordInput.focus();
+    hasError = true;
+  }
+
+  if (hasError) { e.preventDefault(); return; }
+
+  // Show loading spinner
+  const btn = document.getElementById('loginBtn');
+  btn.classList.add('loading');
+});
+
+// ══════════════════════════════════════
+//  PLACEHOLDERS
+// ══════════════════════════════════════
+const placeholders = {
+  '{{ form.username.id_for_label }}': 'your_username',
+  '{{ form.password.id_for_label }}': '••••••••',
+};
+Object.entries(placeholders).forEach(([id, ph]) => {
+  const el = document.getElementById(id);
+  if (el) el.placeholder = ph;
+});
+</script>
+{% endblock %}

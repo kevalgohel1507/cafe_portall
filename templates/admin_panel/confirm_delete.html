@@ -1,0 +1,19 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block title %}Confirm Delete — Admin{% endblock %}
+{% block page_title %}Confirm Delete{% endblock %}
+{% block content %}
+<div style="max-width:500px;margin:0 auto;">
+  <div class="cafe-card p-5 text-center">
+    <div style="font-size:3rem;margin-bottom:1rem;">⚠️</div>
+    <h4 style="color:var(--cream);">Delete {{ type }}?</h4>
+    <p style="color:var(--text-muted);">Are you sure you want to delete <strong style="color:var(--cream);">{{ object }}</strong>? This action cannot be undone.</p>
+    <div class="d-flex gap-3 justify-content-center mt-4">
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-del px-4">Yes, Delete</button>
+      </form>
+      <a href="javascript:history.back()" class="btn btn-outline-cafe px-4">Cancel</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

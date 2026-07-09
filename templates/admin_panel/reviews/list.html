@@ -1,0 +1,41 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block title %}Reviews — Admin{% endblock %}
+{% block page_title %}Reviews{% endblock %}
+{% block content %}
+<h4 style="color:var(--cream);margin-bottom:1.5rem;">All Reviews</h4>
+<div class="cafe-card">
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr><th>User</th><th>Product</th><th>Rating</th><th>Comment</th><th>Verified</th><th>Approved</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for review in reviews %}
+        <tr>
+          <td style="color:var(--cream);">{{ review.user.username }}</td>
+          <td style="color:var(--text-muted);font-size:.85rem;">{{ review.product.name }}</td>
+          <td style="color:var(--gold);">{{ review.rating }}★</td>
+          <td style="color:var(--text-muted);font-size:.85rem;max-width:250px;">{{ review.comment|truncatechars:80 }}</td>
+          <td style="color:{% if review.is_verified_purchase %}#75d98f{% else %}var(--text-muted){% endif %};">
+            {% if review.is_verified_purchase %}✓{% else %}—{% endif %}
+          </td>
+          <td>
+            <form method="post" action="{% url 'admin_panel:review_approve' review.pk %}">
+              {% csrf_token %}
+              <button class="btn btn-sm" style="background:{% if review.is_approved %}rgba(40,167,69,.15);color:#75d98f;border:1px solid rgba(40,167,69,.3){% else %}rgba(255,193,7,.15);color:#ffd84d;border:1px solid rgba(255,193,7,.3){% endif %};border-radius:8px;font-size:.78rem;padding:.25rem .7rem;">
+                {% if review.is_approved %}✓ Approved{% else %}⏳ Pending{% endif %}
+              </button>
+            </form>
+          </td>
+          <td>
+            <a href="{% url 'admin_panel:review_delete' review.pk %}" class="btn btn-del btn-sm">Del</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:3rem;">No reviews yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

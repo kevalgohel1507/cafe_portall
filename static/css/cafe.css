@@ -1,0 +1,45 @@
+/* ── Global Cafe Styles ── */
+.form-select option {
+  background: #2a1810;
+  color: #f5efe6;
+}
+.dropdown-item:hover {
+  background: rgba(212,168,83,0.1) !important;
+}
+.form-check-input:checked {
+  background-color: #d4a853;
+  border-color: #d4a853;
+}
+.form-check-input:focus {
+  box-shadow: 0 0 0 3px rgba(212,168,83,0.2);
+  border-color: #d4a853;
+}
+/* Table style in dark theme */
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-color: #f5efe6;
+  --bs-table-border-color: rgba(200,149,108,0.15);
+}
+.table thead th {
+  color: #a07860;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(200,149,108,0.2);
+}
+/* Pagination */
+.page-link {
+  background: var(--card-bg, #2a1810);
+  border-color: rgba(200,149,108,0.2);
+  color: #c8956c;
+}
+.page-link:hover {
+  background: rgba(212,168,83,0.1);
+  color: #d4a853;
+}
+.page-item.active .page-link {
+  background: #d4a853;
+  border-color: #d4a853;
+  color: #2c1810;
+}

@@ -1,0 +1,77 @@
+{% extends 'base/base.html' %}
+{% block title %}Order #{{ order.order_number }} — Brew & Bliss{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:800px;">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="section-title">Order #{{ order.order_number }}</h2>
+    <a href="{% url 'orders:order_history' %}" style="color:var(--gold);">← Back to Orders</a>
+  </div>
+  <div class="row g-4">
+    <div class="col-md-8">
+      <div class="cafe-card p-4 mb-4">
+        <h5 style="color:var(--cream);margin-bottom:1rem;">Items Ordered</h5>
+        {% for item in order.items.all %}
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-3" style="border-bottom:1px solid var(--border);">
+          <div>
+            <p style="color:var(--cream);font-weight:600;margin:0;">{{ item.product_name }}</p>
+            <small style="color:var(--text-muted);">₹{{ item.product_price }} × {{ item.quantity }}</small>
+            {% if item.selected_attributes.options %}
+            <div style="margin-top:.25rem;">
+              {% for option in item.selected_attributes.options %}
+              <div>
+                <small style="color:var(--text-muted);">{{ option.name }}: {{ option.value }}{% if option.price_modifier > 0 %} (+₹{{ option.price_modifier }}){% endif %}</small>
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+            {% if item.special_instructions %}<br><small style="color:var(--text-muted);font-style:italic;">{{ item.special_instructions }}</small>{% endif %}
+          </div>
+          <strong style="color:var(--gold);">₹{{ item.subtotal }}</strong>
+        </div>
+        {% endfor %}
+        <div class="d-flex justify-content-between mt-2">
+          <span style="color:var(--text-muted);">Subtotal</span><span style="color:var(--cream);">₹{{ order.subtotal }}</span>
+        </div>
+        <div class="d-flex justify-content-between mt-1">
+          <span style="color:var(--text-muted);">Platform Fee (5%)</span><span style="color:var(--cream);">₹{{ order.platform_fee }}</span>
+        </div>
+        <div class="d-flex justify-content-between mt-1">
+          <span style="color:var(--text-muted);">GST on Platform Fee (18%)</span><span style="color:var(--cream);">₹{{ order.platform_fee_tax }}</span>
+        </div>
+        {% if order.delivery_fee %}
+        <div class="d-flex justify-content-between mt-1">
+          <span style="color:var(--text-muted);">Delivery</span><span style="color:var(--cream);">₹{{ order.delivery_fee }}</span>
+        </div>
+        {% endif %}
+        {% if order.discount_amount %}
+        <div class="d-flex justify-content-between mt-1">
+          <span style="color:#75d98f;">Discount</span><span style="color:#75d98f;">−₹{{ order.discount_amount }}</span>
+        </div>
+        {% endif %}
+        <hr style="border-color:var(--border);">
+        <div class="d-flex justify-content-between">
+          <strong style="color:var(--cream);">Total</strong>
+          <strong style="color:var(--gold);font-size:1.2rem;">₹{{ order.total_amount }}</strong>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="cafe-card p-4">
+        <h5 style="color:var(--cream);margin-bottom:1rem;">Order Info</h5>
+        <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:.5rem;">Status</p>
+        <span class="badge rounded-pill px-3 py-2 mb-3" style="background:rgba(212,168,83,.2);color:var(--gold);">{{ order.get_status_display }}</span>
+        <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:.3rem;">Type</p>
+        <p style="color:var(--cream);margin-bottom:.75rem;">{{ order.get_order_type_display }}</p>
+        <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:.3rem;">Payment</p>
+        <p style="color:var(--cream);margin-bottom:.75rem;">{{ order.get_payment_method_display }}</p>
+        <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:.3rem;">Placed On</p>
+        <p style="color:var(--cream);margin-bottom:0;">{{ order.created_at|date:"d M Y, g:i A" }}</p>
+        {% if order.loyalty_points_earned %}
+        <hr style="border-color:var(--border);">
+        <p style="color:#75d98f;font-size:.85rem;margin:0;">+{{ order.loyalty_points_earned }} loyalty points earned</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

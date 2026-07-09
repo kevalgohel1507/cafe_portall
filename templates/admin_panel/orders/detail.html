@@ -1,0 +1,89 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block title %}Order #{{ order.order_number }} — Admin{% endblock %}
+{% block page_title %}Order Detail{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 style="color:var(--cream);margin:0;">Order #{{ order.order_number }}</h4>
+  <a href="{% url 'admin_panel:order_list' %}" class="btn btn-outline-cafe btn-sm">← All Orders</a>
+</div>
+<div class="row g-4">
+  <div class="col-lg-8">
+    <!-- Items -->
+    <div class="cafe-card p-4 mb-4">
+      <h5 style="color:var(--cream);margin-bottom:1rem;">Ordered Items</h5>
+      {% for item in order.items.all %}
+      <div class="d-flex justify-content-between align-items-center mb-3 pb-3" style="border-bottom:1px solid var(--border);">
+        <div>
+          <p style="color:var(--cream);font-weight:600;margin:0;">{{ item.product_name }}</p>
+          <small style="color:var(--text-muted);">₹{{ item.product_price }} × {{ item.quantity }}</small>
+          {% if item.special_instructions %}<br><small style="color:var(--text-muted);font-style:italic;">{{ item.special_instructions }}</small>{% endif %}
+        </div>
+        <strong style="color:var(--gold);">₹{{ item.subtotal }}</strong>
+      </div>
+      {% endfor %}
+      <div class="mt-3">
+        <div class="d-flex justify-content-between mb-1"><span style="color:var(--text-muted);">Subtotal</span><span style="color:var(--cream);">₹{{ order.subtotal }}</span></div>
+        <div class="d-flex justify-content-between mb-1"><span style="color:var(--text-muted);">Tax</span><span style="color:var(--cream);">₹{{ order.tax_amount }}</span></div>
+        {% if order.delivery_fee %}<div class="d-flex justify-content-between mb-1"><span style="color:var(--text-muted);">Delivery</span><span style="color:var(--cream);">₹{{ order.delivery_fee }}</span></div>{% endif %}
+        {% if order.discount_amount %}<div class="d-flex justify-content-between mb-1"><span style="color:#75d98f;">Discount</span><span style="color:#75d98f;">−₹{{ order.discount_amount }}</span></div>{% endif %}
+        <hr style="border-color:var(--border);">
+        <div class="d-flex justify-content-between"><strong style="color:var(--cream);">Total</strong><strong style="color:var(--gold);font-size:1.2rem;">₹{{ order.total_amount }}</strong></div>
+      </div>
+    </div>
+    <!-- Update Status -->
+    <div class="cafe-card p-4">
+      <h5 style="color:var(--cream);margin-bottom:1rem;">Update Order Status</h5>
+      <form method="post" action="{% url 'admin_panel:order_status' order.pk %}" class="d-flex gap-3 align-items-end">
+        {% csrf_token %}
+        <div class="flex-grow-1">
+          <label class="form-label">New Status</label>
+          <select name="status" class="form-select">
+            <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+            <option value="confirmed" {% if order.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+            <option value="preparing" {% if order.status == 'preparing' %}selected{% endif %}>Preparing</option>
+            <option value="ready" {% if order.status == 'ready' %}selected{% endif %}>Ready for Pickup</option>
+            <option value="out_for_delivery" {% if order.status == 'out_for_delivery' %}selected{% endif %}>Out for Delivery</option>
+            <option value="delivered" {% if order.status == 'delivered' %}selected{% endif %}>Delivered</option>
+            <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>Completed</option>
+            <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-cafe px-4">Update</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="cafe-card p-4 mb-3">
+      <h6 style="color:var(--gold);">Customer</h6>
+      <p style="color:var(--cream);font-weight:600;margin:.5rem 0 .2rem;">{{ order.user.get_full_name|default:order.user.username }}</p>
+      <p style="color:var(--text-muted);font-size:.85rem;margin:0;">{{ order.user.email }}</p>
+      {% if order.user.phone %}<p style="color:var(--text-muted);font-size:.85rem;margin:.2rem 0 0;">{{ order.user.phone }}</p>{% endif %}
+    </div>
+    <div class="cafe-card p-4 mb-3">
+      <h6 style="color:var(--gold);">Order Info</h6>
+      <div class="mt-2">
+        <small style="color:var(--text-muted);">Type</small>
+        <p style="color:var(--cream);margin:.1rem 0 .75rem;">{{ order.get_order_type_display }}</p>
+        <small style="color:var(--text-muted);">Payment Method</small>
+        <p style="color:var(--cream);margin:.1rem 0 .75rem;">{{ order.get_payment_method_display }}</p>
+        <small style="color:var(--text-muted);">Payment Status</small>
+        <p style="color:{% if order.payment_status == 'paid' %}#75d98f{% else %}#ffd84d{% endif %};margin:.1rem 0 .75rem;">{{ order.get_payment_status_display }}</p>
+        <small style="color:var(--text-muted);">Placed On</small>
+        <p style="color:var(--cream);margin:.1rem 0 0;">{{ order.created_at|date:"d M Y, g:i A" }}</p>
+      </div>
+    </div>
+    {% if order.delivery_address %}
+    <div class="cafe-card p-4">
+      <h6 style="color:var(--gold);">Delivery Address</h6>
+      <p style="color:var(--cream);font-size:.9rem;margin:.5rem 0 0;">{{ order.delivery_address }}</p>
+    </div>
+    {% endif %}
+    {% if order.special_instructions %}
+    <div class="cafe-card p-4 mt-3">
+      <h6 style="color:var(--gold);">Special Instructions</h6>
+      <p style="color:var(--text-muted);font-size:.9rem;font-style:italic;margin:.5rem 0 0;">{{ order.special_instructions }}</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

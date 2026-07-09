@@ -1,0 +1,1254 @@
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Café Locator — Brew & Bliss</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+    :root {
+      --cream: #f5efe6;
+      --espresso: #2c1810;
+      --latte: #c8956c;
+      --foam: #fdf6ec;
+      --roast: #6b3a2a;
+      --gold: #d4a853;
+      --gold-dim: rgba(212,168,83,0.15);
+      --dark-bg: #1a0f0a;
+      --card-bg: #2a1810;
+      --border: rgba(200,149,108,0.2);
+      --text-muted: #a07860;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: var(--dark-bg);
+      color: var(--cream);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    h1, h2, h3, h4, .brand { font-family: 'Playfair Display', serif; }
+
+    /* ── NOISE TEXTURE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.4;
+    }
+
+    /* ══════════════ NAVBAR ══════════════ */
+    .navbar {
+      background: rgba(26,15,10,0.96);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+      position: sticky; top: 0; z-index: 1000;
+    }
+    .navbar-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      color: var(--gold) !important;
+      letter-spacing: 1px;
+    }
+    .navbar-brand span { color: var(--latte); }
+    .nav-link {
+      color: var(--cream) !important;
+      font-weight: 500; font-size: 0.9rem;
+      letter-spacing: 0.5px;
+      padding: 0.4rem 0.9rem !important;
+      border-radius: 6px; transition: all 0.2s;
+    }
+    .nav-link:hover, .nav-link.active { color: var(--gold) !important; background: rgba(212,168,83,0.1); }
+    .btn-nav-primary {
+      background: var(--gold); color: var(--espresso) !important;
+      font-weight: 600; border-radius: 8px;
+      padding: 0.4rem 1.2rem !important;
+    }
+    .btn-nav-primary:hover { background: var(--latte); }
+    .nav-locator-active {
+      color: var(--gold) !important;
+      background: rgba(212,168,83,0.12) !important;
+      border-radius: 6px;
+    }
+
+    /* ══════════════ HERO BANNER ══════════════ */
+    .locator-hero {
+      position: relative;
+      padding: 4rem 0 2.5rem;
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .locator-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(212,168,83,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(212,168,83,0.1);
+      border: 1px solid rgba(212,168,83,0.25);
+      border-radius: 50px;
+      padding: 5px 16px;
+      font-size: 0.75rem; font-weight: 600;
+      color: var(--gold); letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+      animation: fadeSlideDown 0.6s ease forwards;
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      font-weight: 700; line-height: 1.1;
+      letter-spacing: -1px;
+      animation: fadeSlideDown 0.6s 0.1s ease both;
+    }
+    .hero-title .outline {
+      -webkit-text-stroke: 1.5px var(--gold);
+      color: transparent;
+    }
+    .hero-subtitle {
+      color: var(--text-muted); font-size: 1rem; line-height: 1.7;
+      max-width: 480px;
+      animation: fadeSlideDown 0.6s 0.2s ease both;
+    }
+    .gold-line { width: 50px; height: 3px; background: var(--gold); border-radius: 2px; }
+
+    /* Breadcrumb */
+    .custom-breadcrumb {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.8rem; color: var(--text-muted);
+      margin-bottom: 2rem;
+      animation: fadeSlideDown 0.5s ease forwards;
+    }
+    .custom-breadcrumb a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+    .custom-breadcrumb a:hover { color: var(--gold); }
+    .custom-breadcrumb .sep { opacity: 0.4; }
+    .custom-breadcrumb .current { color: var(--gold); font-weight: 500; }
+
+    /* ══════════════ MAIN LAYOUT ══════════════ */
+    .locator-body { padding: 3rem 0 5rem; }
+    .locator-grid { display: grid; grid-template-columns: 380px 1fr; gap: 2rem; align-items: start; }
+    @media (max-width: 991px) { .locator-grid { grid-template-columns: 1fr; } }
+
+    /* ══════════════ FILTER PANEL ══════════════ */
+    .filter-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.8rem;
+      position: sticky; top: 90px;
+      animation: fadeSlideRight 0.6s 0.2s ease both;
+    }
+    .filter-panel-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem; color: var(--cream);
+      margin-bottom: 0.3rem;
+    }
+    .filter-panel-sub { font-size: 0.78rem; color: var(--text-muted); }
+
+    /* Divider */
+    .panel-divider {
+      border: none; border-top: 1px solid var(--border);
+      margin: 1.2rem 0;
+    }
+
+    /* Step labels */
+    .step-label {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 0.8rem;
+    }
+    .step-num {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--gold-dim);
+      border: 1px solid rgba(212,168,83,0.4);
+      color: var(--gold); font-size: 0.72rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-text { font-size: 0.82rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; }
+
+    /* Custom Dropdown */
+    .custom-select-wrap { position: relative; }
+    .custom-select {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--cream);
+      padding: 0.75rem 2.8rem 0.75rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      transition: all 0.2s;
+      outline: none;
+    }
+    .custom-select:focus {
+      border-color: var(--gold);
+      background: rgba(255,255,255,0.07);
+      box-shadow: 0 0 0 3px rgba(212,168,83,0.15);
+    }
+    .custom-select option { background: #2a1810; color: var(--cream); }
+    .select-icon {
+      position: absolute; right: 14px; top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none; color: var(--gold); font-size: 0.75rem;
+    }
+
+    /* City search */
+    .city-input-wrap { position: relative; }
+    .city-input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--cream);
+      padding: 0.75rem 2.8rem 0.75rem 2.6rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      outline: none; transition: all 0.2s;
+    }
+    .city-input:focus {
+      border-color: var(--gold);
+      background: rgba(255,255,255,0.07);
+      box-shadow: 0 0 0 3px rgba(212,168,83,0.15);
+    }
+    .city-input::placeholder { color: rgba(200,149,108,0.4); }
+    .city-input-icon {
+      position: absolute; left: 12px; top: 50%;
+      transform: translateY(-50%); color: var(--gold);
+      font-size: 0.8rem; pointer-events: none;
+    }
+    .city-input-clear {
+      position: absolute; right: 12px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none;
+      color: var(--text-muted); cursor: pointer;
+      font-size: 0.75rem; padding: 0;
+      display: none;
+    }
+    .city-input-clear.show { display: block; }
+
+    /* City suggestions dropdown */
+    .city-suggestions {
+      position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+      background: #2a1a10;
+      border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+      z-index: 200; display: none;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+    }
+    .city-suggestions.show { display: block; }
+    .suggestion-item {
+      padding: 10px 14px;
+      cursor: pointer; font-size: 0.85rem;
+      display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid rgba(200,149,108,0.08);
+      transition: background 0.15s;
+    }
+    .suggestion-item:last-child { border-bottom: none; }
+    .suggestion-item:hover { background: rgba(212,168,83,0.08); color: var(--gold); }
+    .suggestion-item .sug-icon { color: var(--gold); font-size: 0.75rem; }
+    .suggestion-item .sug-state { font-size: 0.7rem; color: var(--text-muted); margin-left: auto; }
+    .no-suggestions {
+      padding: 14px; font-size: 0.82rem;
+      color: var(--text-muted); text-align: center;
+    }
+
+    /* State Pills */
+    .state-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.8rem; }
+    .state-pill {
+      padding: 5px 14px; border-radius: 50px;
+      border: 1px solid var(--border);
+      color: var(--text-muted); font-size: 0.78rem; font-weight: 600;
+      background: transparent; cursor: pointer; transition: all 0.18s;
+      white-space: nowrap;
+    }
+    .state-pill:hover { border-color: rgba(212,168,83,0.5); color: var(--gold); }
+    .state-pill.active { background: var(--gold); color: var(--espresso); border-color: var(--gold); }
+
+    /* Results count */
+    .results-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 0;
+      border-top: 1px solid var(--border);
+      margin-top: 1.2rem;
+    }
+    .results-count {
+      font-size: 0.82rem; color: var(--text-muted);
+    }
+    .results-count span { color: var(--gold); font-weight: 700; }
+    .clear-btn {
+      background: none; border: none;
+      color: var(--text-muted); font-size: 0.78rem;
+      cursor: pointer; padding: 0;
+      transition: color 0.2s;
+      text-decoration: underline;
+    }
+    .clear-btn:hover { color: var(--gold); }
+
+    /* Feature tags */
+    .feature-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.6rem; }
+    .feature-tag {
+      padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 4px;
+      cursor: pointer; transition: all 0.18s;
+      border: 1px solid transparent;
+    }
+    .feature-tag.wifi { background: rgba(110,227,245,0.1); color: #6ee3f5; border-color: rgba(110,227,245,0.2); }
+    .feature-tag.parking { background: rgba(40,167,69,0.1); color: #75d98f; border-color: rgba(40,167,69,0.2); }
+    .feature-tag.outdoor { background: rgba(212,168,83,0.1); color: var(--gold); border-color: rgba(212,168,83,0.2); }
+    .feature-tag.drive { background: rgba(220,53,69,0.1); color: #f27680; border-color: rgba(220,53,69,0.2); }
+    .feature-tag.active { opacity: 0.5; text-decoration: line-through; }
+
+    /* ══════════════ RESULTS PANEL ══════════════ */
+    .results-panel { animation: fadeSlideLeft 0.6s 0.3s ease both; }
+
+    /* View toggle */
+    .view-toggle {
+      display: flex; gap: 4px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 4px;
+    }
+    .view-btn {
+      background: none; border: none;
+      padding: 6px 14px; border-radius: 7px;
+      color: var(--text-muted); font-size: 0.8rem;
+      cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .view-btn.active { background: var(--gold); color: var(--espresso); font-weight: 600; }
+
+    /* Sort select */
+    .sort-select {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px; color: var(--cream);
+      padding: 6px 30px 6px 12px;
+      font-size: 0.78rem; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23d4a853'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      outline: none;
+    }
+    .sort-select option { background: #2a1810; }
+
+    /* ── Cafe Card ── */
+    .cafe-result-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 18px; overflow: hidden;
+      transition: all 0.25s;
+      cursor: pointer;
+      animation: fadeInUp 0.4s ease both;
+    }
+    .cafe-result-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+      border-color: rgba(212,168,83,0.35);
+    }
+    /* Grid layout */
+    #cafes-grid.grid-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
+    /* List layout */
+    #cafes-grid.list-view { display: flex; flex-direction: column; gap: 1rem; }
+    #cafes-grid.list-view .cafe-result-card { display: flex; flex-direction: row; }
+    #cafes-grid.list-view .card-photo { width: 180px; height: auto; flex-shrink: 0; }
+    #cafes-grid.list-view .card-photo svg { height: 100%; min-height: 150px; }
+    #cafes-grid.list-view .card-body-wrap { flex: 1; }
+
+    .card-photo {
+      position: relative; height: 170px; overflow: hidden;
+    }
+    .card-photo svg { width: 100%; height: 100%; object-fit: cover; }
+    .open-badge {
+      position: absolute; top: 10px; left: 10px;
+      background: rgba(40,167,69,0.9);
+      color: #fff; font-size: 0.65rem; font-weight: 700;
+      padding: 3px 9px; border-radius: 20px; letter-spacing: 0.5px;
+      backdrop-filter: blur(4px);
+    }
+    .open-badge.soon {
+      background: rgba(255,193,7,0.9); color: #2c1810;
+    }
+    .rating-badge {
+      position: absolute; top: 10px; right: 10px;
+      background: rgba(26,15,10,0.85);
+      border: 1px solid rgba(212,168,83,0.4);
+      color: var(--gold); font-size: 0.72rem; font-weight: 700;
+      padding: 3px 8px; border-radius: 8px;
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; gap: 3px;
+    }
+    .card-body-wrap { padding: 1.1rem; }
+    .card-city { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: var(--cream); }
+    .card-state { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+    .card-address {
+      font-size: 0.78rem; color: var(--text-muted);
+      line-height: 1.5; margin: 0.5rem 0 0.7rem;
+      display: flex; align-items: flex-start; gap: 5px;
+    }
+    .card-address i { margin-top: 3px; font-size: 0.68rem; color: var(--gold); flex-shrink: 0; }
+    .card-timing {
+      font-size: 0.72rem; color: var(--text-muted);
+      display: flex; align-items: center; gap: 5px;
+      margin-bottom: 0.75rem;
+    }
+    .card-timing i { color: #ffd84d; font-size: 0.65rem; }
+    /* Feature chips */
+    .card-features { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 0.9rem; }
+    .chip {
+      padding: 2px 8px; border-radius: 5px;
+      font-size: 0.65rem; font-weight: 600;
+      background: rgba(212,168,83,0.1);
+      border: 1px solid rgba(212,168,83,0.2);
+      color: var(--gold);
+    }
+    .chip.blue { background: rgba(110,227,245,0.08); border-color: rgba(110,227,245,0.2); color: #6ee3f5; }
+    .chip.green { background: rgba(40,167,69,0.08); border-color: rgba(40,167,69,0.2); color: #75d98f; }
+    /* Action buttons */
+    .card-actions { display: flex; gap: 8px; }
+    .card-btn-primary {
+      flex: 1; padding: 8px 12px;
+      background: var(--gold); color: var(--espresso);
+      border: none; border-radius: 9px;
+      font-weight: 700; font-size: 0.78rem; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: all 0.18s;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+    }
+    .card-btn-primary:hover { background: var(--latte); color: #fff; }
+    .card-btn-icon {
+      width: 34px; height: 34px;
+      border: 1px solid var(--border);
+      background: transparent; border-radius: 9px;
+      color: var(--text-muted); font-size: 0.75rem;
+      cursor: pointer; transition: all 0.18s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .card-btn-icon:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+
+    /* Landmark icon */
+    .landmark-chip {
+      width: 36px; height: 36px;
+      background: rgba(212,168,83,0.08);
+      border: 1px solid rgba(212,168,83,0.15);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center; padding: 4rem 2rem;
+      display: none;
+    }
+    .empty-state.show { display: block; }
+    .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+    .empty-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: 0.5rem; }
+    .empty-sub { color: var(--text-muted); font-size: 0.85rem; }
+
+    /* ── MAP PLACEHOLDER ── */
+    .map-preview {
+      background: linear-gradient(135deg, rgba(42,24,16,0.8), rgba(26,15,10,0.9));
+      border: 1px solid var(--border);
+      border-radius: 18px; overflow: hidden;
+      margin-bottom: 2rem;
+      position: relative; height: 220px;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 8px;
+      animation: fadeSlideDown 0.6s 0.15s ease both;
+    }
+    .map-preview-text { color: var(--text-muted); font-size: 0.82rem; }
+    .map-pins { display: flex; gap: 20px; }
+    .map-pin-dot {
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--gold); box-shadow: 0 0 0 6px rgba(212,168,83,0.2);
+      animation: pulse 2s infinite;
+    }
+    .map-pin-dot:nth-child(2) { animation-delay: 0.4s; background: var(--latte); }
+    .map-pin-dot:nth-child(3) { animation-delay: 0.8s; }
+
+    /* ── STATS STRIP ── */
+    .stats-strip {
+      display: flex; gap: 1rem; flex-wrap: wrap;
+      margin-bottom: 2rem;
+      animation: fadeSlideDown 0.6s 0.1s ease both;
+    }
+    .stat-pill {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(212,168,83,0.06);
+      border: 1px solid var(--border);
+      border-radius: 50px; padding: 6px 14px;
+      font-size: 0.78rem; color: var(--text-muted);
+    }
+    .stat-pill strong { color: var(--gold); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeSlideDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideRight {
+      from { opacity: 0; transform: translateX(-20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeSlideLeft {
+      from { opacity: 0; transform: translateX(20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 4px rgba(212,168,83,0.2); }
+      50%       { box-shadow: 0 0 0 10px rgba(212,168,83,0.05); }
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--dark-bg); }
+    ::-webkit-scrollbar-thumb { background: var(--roast); border-radius: 3px; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--espresso); border-top: 1px solid var(--border);
+      padding: 2rem 0; margin-top: 2rem;
+    }
+    footer p { color: var(--text-muted); font-size: 0.85rem; margin: 0; }
+    footer a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; }
+    footer a:hover { color: var(--gold); }
+
+    /* ── TOOLTIP ── */
+    [data-tip] { position: relative; }
+    [data-tip]::after {
+      content: attr(data-tip);
+      position: absolute; bottom: calc(100% + 6px); left: 50%;
+      transform: translateX(-50%);
+      background: #2a1810; border: 1px solid var(--border);
+      color: var(--cream); font-size: 0.7rem; padding: 4px 8px;
+      border-radius: 6px; white-space: nowrap;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    [data-tip]:hover::after { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ NAVBAR ══════════════ -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="{% url 'home' %}">☕ Brew <span>&</span> Bliss</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span style="color:var(--gold);font-size:1.4rem;">☰</span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav mx-auto gap-1">
+        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'menu:menu_list' %}">Menu</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'reservations:make_reservation' %}">Reserve Table</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'loyalty:dashboard' %}">Rewards</a></li>
+        <li class="nav-item"><a class="nav-link nav-locator-active" href="{% url 'cafe_locator' %}">
+          <i class="fas fa-map-marker-alt me-1" style="font-size:0.75rem;"></i>Café Locator
+        </a></li>
+      </ul>
+      <ul class="navbar-nav gap-1 align-items-center">
+        <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Login</a></li>
+        <li class="nav-item"><a class="nav-link btn-nav-primary" href="{% url 'accounts:register' %}">Sign Up</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════ HERO BANNER ══════════════ -->
+<section class="locator-hero">
+  <div class="container">
+    <div class="custom-breadcrumb">
+      <a href="{% url 'home' %}">Home</a>
+      <span class="sep">›</span>
+      <span class="current">Café Locator</span>
+    </div>
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <div class="hero-eyebrow">
+          <i class="fas fa-map-marker-alt"></i> Find Your Nearest Café
+        </div>
+        <div class="gold-line mb-3"></div>
+        <h1 class="hero-title mb-3">
+          Find a <span class="outline">Brew & Bliss</span><br>Near You
+        </h1>
+        <p class="hero-subtitle mb-0">
+          Select your state, search your city, and discover the café that's closest to your heart — and your doorstep.
+        </p>
+      </div>
+      <div class="col-lg-6 mt-4 mt-lg-0">
+        <!-- Stats -->
+        <div class="stats-strip justify-content-lg-end">
+          <div class="stat-pill"><strong>5+</strong> Cities</div>
+          <div class="stat-pill"><strong>4</strong> States</div>
+          <div class="stat-pill"><strong>2K+</strong> Guests/day</div>
+          <div class="stat-pill"><strong>4.9★</strong> Rating</div>
+        </div>
+        <!-- Mini map preview -->
+        <div class="map-preview">
+          <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.12;" viewBox="0 0 800 220" xmlns="http://www.w3.org/2000/svg">
+            <!-- Grid lines -->
+            <line x1="0" y1="55" x2="800" y2="55" stroke="#d4a853" stroke-width="0.5"/>
+            <line x1="0" y1="110" x2="800" y2="110" stroke="#d4a853" stroke-width="0.5"/>
+            <line x1="0" y1="165" x2="800" y2="165" stroke="#d4a853" stroke-width="0.5"/>
+            <line x1="160" y1="0" x2="160" y2="220" stroke="#d4a853" stroke-width="0.5"/>
+            <line x1="320" y1="0" x2="320" y2="220" stroke="#d4a853" stroke-width="0.5"/>
+            <line x1="480" y1="0" x2="480" y2="220" stroke="#d4a853" stroke-width="0.5"/>
+            <line x1="640" y1="0" x2="640" y2="220" stroke="#d4a853" stroke-width="0.5"/>
+            <!-- India rough outline hint -->
+            <path d="M280 20 Q320 18 370 30 Q420 42 440 80 Q460 110 450 150 Q430 180 400 200 Q360 215 320 200 Q280 185 260 155 Q240 120 250 80 Q260 45 280 20Z" fill="none" stroke="#d4a853" stroke-width="1" opacity="0.5"/>
+          </svg>
+          <div class="map-pins">
+            <div class="map-pin-dot"></div>
+            <div class="map-pin-dot"></div>
+            <div class="map-pin-dot"></div>
+            <div class="map-pin-dot" style="animation-delay:1.2s;background:var(--latte)"></div>
+            <div class="map-pin-dot" style="animation-delay:1.6s;"></div>
+          </div>
+          <div class="map-preview-text" style="color:var(--text-muted); font-size: 0.78rem; margin-top: 6px;">
+            <i class="fas fa-circle" style="color:#75d98f; font-size:0.5rem; margin-right:5px;"></i>5 cafés currently open across India
+          </div>
+          <div style="position:absolute;bottom:10px;right:12px;font-size:0.68rem;color:rgba(160,120,96,0.4);">
+            Interactive Map — Coming Soon
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ MAIN BODY ══════════════ -->
+<section class="locator-body">
+  <div class="container">
+    <div class="locator-grid">
+
+      <!-- ════════ LEFT: FILTER PANEL ════════ -->
+      <aside class="filter-panel">
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--gold);"></div>
+          <div class="filter-panel-title">Find a Café</div>
+        </div>
+        <div class="filter-panel-sub">Narrow down by state, city, or amenities</div>
+
+        <hr class="panel-divider">
+
+        <!-- Step 1: State -->
+        <div class="step-label">
+          <div class="step-num">1</div>
+          <div class="step-text">Select State</div>
+        </div>
+        <div class="custom-select-wrap mb-2">
+          <select class="custom-select" id="stateSelect" onchange="onStateChange()">
+            <option value="">— All States —</option>
+            <option value="gujarat">Gujarat</option>
+            <option value="maharashtra">Maharashtra</option>
+            <option value="rajasthan">Rajasthan</option>
+            <option value="delhi">Delhi</option>
+            <option value="karnataka">Karnataka</option>
+          </select>
+          <i class="fas fa-chevron-down select-icon"></i>
+        </div>
+        <!-- Quick state pills -->
+        <div class="state-pills">
+          <button class="state-pill active" onclick="selectState('', this)">All</button>
+          <button class="state-pill" onclick="selectState('gujarat', this)">Gujarat</button>
+          <button class="state-pill" onclick="selectState('maharashtra', this)">Maharashtra</button>
+          <button class="state-pill" onclick="selectState('rajasthan', this)">Rajasthan</button>
+          <button class="state-pill" onclick="selectState('delhi', this)">Delhi</button>
+          <button class="state-pill" onclick="selectState('karnataka', this)">Karnataka</button>
+        </div>
+
+        <hr class="panel-divider">
+
+        <!-- Step 2: City -->
+        <div class="step-label">
+          <div class="step-num">2</div>
+          <div class="step-text">Search City</div>
+        </div>
+        <div class="city-input-wrap">
+          <i class="fas fa-search city-input-icon"></i>
+          <input class="city-input" type="text" id="cityInput" placeholder="Type a city name…" oninput="onCityInput()" autocomplete="off">
+          <button class="city-input-clear" id="clearCityBtn" onclick="clearCity()">✕</button>
+          <div class="city-suggestions" id="citySuggestions"></div>
+        </div>
+
+        <hr class="panel-divider">
+
+        <!-- Step 3: Amenities -->
+        <div class="step-label">
+          <div class="step-num">3</div>
+          <div class="step-text">Filter by Amenities</div>
+        </div>
+        <div class="feature-tags">
+          <button class="feature-tag wifi" onclick="toggleFeature(this)" data-feature="wifi">
+            <i class="fas fa-wifi"></i> Free Wi-Fi
+          </button>
+          <button class="feature-tag parking" onclick="toggleFeature(this)" data-feature="parking">
+            <i class="fas fa-parking"></i> Parking
+          </button>
+          <button class="feature-tag outdoor" onclick="toggleFeature(this)" data-feature="outdoor">
+            <i class="fas fa-leaf"></i> Outdoor
+          </button>
+          <button class="feature-tag drive" onclick="toggleFeature(this)" data-feature="drive">
+            <i class="fas fa-car"></i> Drive-Through
+          </button>
+        </div>
+
+        <hr class="panel-divider">
+
+        <!-- Status filter -->
+        <div class="step-label">
+          <div class="step-num">4</div>
+          <div class="step-text">Open Status</div>
+        </div>
+        <div class="custom-select-wrap">
+          <select class="custom-select" id="statusSelect" onchange="filterAll()">
+            <option value="">All Cafés</option>
+            <option value="open">Open Now</option>
+            <option value="soon">Opening Soon</option>
+          </select>
+          <i class="fas fa-chevron-down select-icon"></i>
+        </div>
+
+        <!-- Results meta -->
+        <div class="results-meta">
+          <div class="results-count">Showing <span id="resultsCount">5</span> cafés</div>
+          <button class="clear-btn" onclick="clearAll()">Clear all filters</button>
+        </div>
+      </aside>
+
+      <!-- ════════ RIGHT: RESULTS PANEL ════════ -->
+      <main class="results-panel">
+
+        <!-- Toolbar -->
+        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+          <div style="font-size:0.85rem;color:var(--text-muted);">
+            <span id="resultsSummary">All cafés across India</span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <select class="sort-select" id="sortSelect" onchange="filterAll()">
+              <option value="default">Sort: Featured</option>
+              <option value="rating">Highest Rated</option>
+              <option value="az">A → Z</option>
+            </select>
+            <div class="view-toggle">
+              <button class="view-btn active" id="gridViewBtn" onclick="setView('grid')" data-tip="Grid View">
+                <i class="fas fa-th-large"></i>
+              </button>
+              <button class="view-btn" id="listViewBtn" onclick="setView('list')" data-tip="List View">
+                <i class="fas fa-list"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cafe Cards Grid -->
+        <div id="cafes-grid" class="grid-view"></div>
+
+        <!-- Empty state -->
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">☕</div>
+          <div class="empty-title">No cafés found</div>
+          <p class="empty-sub">Try adjusting your filters — we're always expanding!</p>
+          <button class="btn mt-3" style="background:var(--gold);color:var(--espresso);font-weight:600;border-radius:10px;padding:0.5rem 1.5rem;" onclick="clearAll()">
+            Clear Filters
+          </button>
+        </div>
+
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer>
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <p>© 2024 <strong style="color:var(--gold);">Brew & Bliss</strong> — Made with ☕ & ❤️</p>
+      <div class="d-flex gap-3">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ══════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════
+const CAFES = [
+  {
+    id: 1,
+    city: "Ahmedabad",
+    state: "gujarat",
+    stateLabel: "Gujarat",
+    address: "Shop 12, CG Road, Navrangpura, Ahmedabad 380009",
+    hours: "Mon–Sun: 8am – 10pm",
+    status: "open",
+    rating: 4.9,
+    landmark: "Kite Festival",
+    mapsUrl: "https://maps.google.com/?q=CG+Road+Navrangpura+Ahmedabad",
+    features: ["wifi","parking","outdoor"],
+    photo: "ahmedabad",
+  },
+  {
+    id: 2,
+    city: "Mumbai",
+    state: "maharashtra",
+    stateLabel: "Maharashtra",
+    address: "Level 2, Palladium Mall, Lower Parel, Mumbai 400013",
+    hours: "Mon–Sun: 9am – 11pm",
+    status: "open",
+    rating: 4.8,
+    landmark: "Gateway of India",
+    mapsUrl: "https://maps.google.com/?q=Palladium+Mall+Lower+Parel+Mumbai",
+    features: ["wifi","outdoor"],
+    photo: "mumbai",
+  },
+  {
+    id: 3,
+    city: "Jaipur",
+    state: "rajasthan",
+    stateLabel: "Rajasthan",
+    address: "B-14, MI Road, Near Ajmeri Gate, Jaipur 302001",
+    hours: "Mon–Sun: 8am – 10pm",
+    status: "open",
+    rating: 4.9,
+    landmark: "Hawa Mahal",
+    mapsUrl: "https://maps.google.com/?q=MI+Road+Ajmeri+Gate+Jaipur",
+    features: ["wifi","parking","drive"],
+    photo: "jaipur",
+  },
+  {
+    id: 4,
+    city: "New Delhi",
+    state: "delhi",
+    stateLabel: "Delhi",
+    address: "F-7, Connaught Place, New Delhi 110001",
+    hours: "Mon–Sun: 8am – 11pm",
+    status: "open",
+    rating: 4.8,
+    landmark: "India Gate",
+    mapsUrl: "https://maps.google.com/?q=Connaught+Place+New+Delhi",
+    features: ["wifi","parking"],
+    photo: "delhi",
+  },
+  {
+    id: 5,
+    city: "Bengaluru",
+    state: "karnataka",
+    stateLabel: "Karnataka",
+    address: "12, Brigade Road, MG Road Area, Bengaluru 560001",
+    hours: "Mon–Sun: 7am – 11pm",
+    status: "open",
+    rating: 4.9,
+    landmark: "Vidhana Soudha",
+    mapsUrl: "https://maps.google.com/?q=Brigade+Road+MG+Road+Bengaluru",
+    features: ["wifi","outdoor","drive"],
+    photo: "bengaluru",
+  },
+  {
+    id: 6,
+    city: "Surat",
+    state: "gujarat",
+    stateLabel: "Gujarat",
+    address: "GF-3, VR Surat Mall, Dumas Road, Surat 395007",
+    hours: "Mon–Sun: 9am – 10pm",
+    status: "soon",
+    rating: 4.7,
+    landmark: "Diamond City",
+    mapsUrl: "https://maps.google.com/?q=VR+Surat+Mall+Dumas+Road+Surat",
+    features: ["wifi","parking"],
+    photo: "surat",
+  },
+];
+
+const STATE_CITIES = {
+  gujarat: ["Ahmedabad","Surat","Vadodara","Rajkot","Gandhinagar"],
+  maharashtra: ["Mumbai","Pune","Nagpur","Nashik","Aurangabad"],
+  rajasthan: ["Jaipur","Jodhpur","Udaipur","Kota","Ajmer"],
+  delhi: ["New Delhi","Dwarka","Rohini","Saket","Noida"],
+  karnataka: ["Bengaluru","Mysuru","Hubli","Mangaluru","Belagavi"],
+};
+
+// ── SVG photos (matching the original) ──
+const PHOTOS = {
+  ahmedabad: `<svg viewBox="0 0 400 170" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+    <rect width="400" height="170" fill="#2a1208"/>
+    <rect x="0" y="120" width="400" height="50" fill="#1a0a04"/>
+    <rect x="40" y="95" width="60" height="8" rx="4" fill="#d4a853" opacity=".6"/>
+    <rect x="60" y="103" width="4" height="17" fill="#c8956c" opacity=".5"/>
+    <rect x="75" y="103" width="4" height="17" fill="#c8956c" opacity=".5"/>
+    <rect x="180" y="85" width="70" height="8" rx="4" fill="#d4a853" opacity=".5"/>
+    <rect x="200" y="93" width="4" height="27" fill="#c8956c" opacity=".4"/>
+    <rect x="218" y="93" width="4" height="27" fill="#c8956c" opacity=".4"/>
+    <rect x="290" y="96" width="60" height="8" rx="4" fill="#d4a853" opacity=".55"/>
+    <circle cx="80" cy="26" r="18" fill="#d4a853" opacity=".12"/>
+    <circle cx="200" cy="22" r="22" fill="#c8956c" opacity=".1"/>
+    <circle cx="320" cy="26" r="18" fill="#d4a853" opacity=".12"/>
+    <line x1="80" y1="0" x2="80" y2="26" stroke="#d4a853" stroke-width="1" opacity=".3"/>
+    <line x1="200" y1="0" x2="200" y2="22" stroke="#d4a853" stroke-width="1" opacity=".3"/>
+    <line x1="320" y1="0" x2="320" y2="26" stroke="#d4a853" stroke-width="1" opacity=".3"/>
+    <text x="200" y="58" text-anchor="middle" font-family="Georgia,serif" font-size="13" fill="#d4a853" opacity=".7">☕ Brew &amp; Bliss</text>
+    <text x="200" y="73" text-anchor="middle" font-family="Arial" font-size="8" fill="#a07860" opacity=".6">Ahmedabad · Since 2019</text>
+  </svg>`,
+  mumbai: `<svg viewBox="0 0 400 170" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+    <rect width="400" height="170" fill="#0a1520"/>
+    <rect x="0" y="130" width="400" height="40" fill="#0d1a2e"/>
+    <path d="M0 135 Q50 125 100 135 Q150 145 200 135 Q250 125 300 135 Q350 145 400 135 L400 170 L0 170 Z" fill="#0f2040" opacity=".8"/>
+    <rect x="10" y="60" width="25" height="70" fill="#162030"/>
+    <rect x="40" y="42" width="20" height="88" fill="#1a2840"/>
+    <rect x="310" y="52" width="20" height="78" fill="#1a2840"/>
+    <rect x="365" y="46" width="25" height="84" fill="#1a2840"/>
+    <rect x="15" y="75" width="5" height="4" fill="#ffd84d" opacity=".6"/>
+    <rect x="45" y="55" width="5" height="4" fill="#ffd84d" opacity=".6"/>
+    <rect x="315" y="65" width="5" height="4" fill="#ffd84d" opacity=".5"/>
+    <rect x="170" y="86" width="60" height="44" fill="none" stroke="#d4a853" stroke-width="1" opacity=".4"/>
+    <path d="M175 86 Q200 62 225 86" fill="none" stroke="#d4a853" stroke-width="1.5" opacity=".6"/>
+    <text x="200" y="162" text-anchor="middle" font-family="Arial" font-size="8" fill="#6b8fa8" opacity=".5">Marine Drive, Mumbai</text>
+  </svg>`,
+  jaipur: `<svg viewBox="0 0 400 170" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+    <rect width="400" height="170" fill="#1a0808"/>
+    <rect x="0" y="0" width="400" height="90" fill="#2d0f0f" opacity=".8"/>
+    <rect x="100" y="52" width="200" height="78" fill="#4a1a0a" opacity=".9"/>
+    <path d="M115 52 Q125 37 135 52" fill="#6b2a10" stroke="#c8956c" stroke-width="1" opacity=".7"/>
+    <path d="M140 50 Q150 35 160 50" fill="#6b2a10" stroke="#c8956c" stroke-width="1" opacity=".7"/>
+    <path d="M165 48 Q175 33 185 48" fill="#6b2a10" stroke="#c8956c" stroke-width="1" opacity=".7"/>
+    <path d="M190 46 Q200 31 210 46" fill="#d4a853" stroke="#d4a853" stroke-width="1" opacity=".6"/>
+    <path d="M215 48 Q225 33 235 48" fill="#6b2a10" stroke="#c8956c" stroke-width="1" opacity=".7"/>
+    <path d="M240 50 Q250 35 260 50" fill="#6b2a10" stroke="#c8956c" stroke-width="1" opacity=".7"/>
+    <path d="M265 52 Q275 37 285 52" fill="#6b2a10" stroke="#c8956c" stroke-width="1" opacity=".7"/>
+    <rect x="193" y="51" width="12" height="14" rx="6" fill="#ffd84d" opacity=".3"/>
+    <rect x="0" y="132" width="400" height="38" fill="#0f0505"/>
+    <text x="200" y="162" text-anchor="middle" font-family="Arial" font-size="8" fill="#8b4a2a" opacity=".6">Pink City · Jaipur</text>
+  </svg>`,
+  delhi: `<svg viewBox="0 0 400 170" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+    <rect width="400" height="170" fill="#080f08"/>
+    <rect x="0" y="122" width="400" height="48" fill="#040804"/>
+    <rect x="155" y="68" width="90" height="54" fill="none" stroke="#75d98f" stroke-width="1" opacity=".4"/>
+    <path d="M160 68 Q200 44 240 68" fill="none" stroke="#75d98f" stroke-width="2" opacity=".6"/>
+    <rect x="172" y="46" width="14" height="24" fill="#1a3a1a" stroke="#75d98f" stroke-width="1" opacity=".5"/>
+    <rect x="214" y="46" width="14" height="24" fill="#1a3a1a" stroke="#75d98f" stroke-width="1" opacity=".5"/>
+    <path d="M200 122 Q203 114 200 108 Q197 114 200 122" fill="#ffd84d" opacity=".4"/>
+    <circle cx="90" cy="102" r="18" fill="#0d2a0d" opacity=".8"/>
+    <circle cx="310" cy="102" r="18" fill="#0d2a0d" opacity=".8"/>
+    <text x="200" y="162" text-anchor="middle" font-family="Arial" font-size="8" fill="#2a5a2a" opacity=".6">Rajpath, New Delhi</text>
+  </svg>`,
+  bengaluru: `<svg viewBox="0 0 400 170" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+    <rect width="400" height="170" fill="#080f18"/>
+    <rect x="0" y="112" width="400" height="58" fill="#040810"/>
+    <rect x="130" y="58" width="140" height="54" fill="#0f1a2a" stroke="#6ee3f5" stroke-width="0.8" opacity=".5"/>
+    <path d="M135 58 Q200 28 265 58" fill="none" stroke="#6ee3f5" stroke-width="1.5" opacity=".6"/>
+    <rect x="145" y="33" width="12" height="28" fill="#0d1a2a" stroke="#6ee3f5" stroke-width="1" opacity=".5"/>
+    <rect x="194" y="24" width="14" height="36" fill="#0d1a2a" stroke="#6ee3f5" stroke-width="1.2" opacity=".6"/>
+    <rect x="243" y="33" width="12" height="28" fill="#0d1a2a" stroke="#6ee3f5" stroke-width="1" opacity=".5"/>
+    <path d="M194 24 Q201 16 208 24" fill="#1a2a40" stroke="#6ee3f5" stroke-width="1.5" opacity=".7"/>
+    <circle cx="60" cy="40" r="3" fill="#6ee3f5" opacity=".2"/>
+    <circle cx="340" cy="48" r="3" fill="#6ee3f5" opacity=".2"/>
+    <text x="200" y="162" text-anchor="middle" font-family="Arial" font-size="8" fill="#1a3a4a" opacity=".6">Silicon City · Bengaluru</text>
+  </svg>`,
+  surat: `<svg viewBox="0 0 400 170" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+    <rect width="400" height="170" fill="#150a04"/>
+    <rect x="0" y="110" width="400" height="60" fill="#0a0502"/>
+    <polygon points="200,22 240,72 200,100 160,72" fill="none" stroke="#d4a853" stroke-width="1.5" opacity=".6"/>
+    <polygon points="200,22 220,62 200,82 180,62" fill="#d4a853" opacity=".08"/>
+    <line x1="200" y1="22" x2="200" y2="100" stroke="#d4a853" stroke-width="0.8" opacity=".3"/>
+    <line x1="160" y1="72" x2="240" y2="72" stroke="#d4a853" stroke-width="0.8" opacity=".3"/>
+    <circle cx="200" cy="22" r="2" fill="#ffd84d" opacity=".7"/>
+    <circle cx="155" cy="70" r="1.5" fill="#ffd84d" opacity=".5"/>
+    <circle cx="245" cy="70" r="1.5" fill="#ffd84d" opacity=".5"/>
+    <path d="M0 130 Q100 120 200 130 Q300 140 400 130" fill="none" stroke="#6ee3f5" stroke-width="1" opacity=".2"/>
+    <text x="200" y="162" text-anchor="middle" font-family="Arial" font-size="8" fill="#5a3a1a" opacity=".6">Diamond City · Surat</text>
+  </svg>`,
+};
+
+const FEATURE_LABELS = { wifi: "Free Wi-Fi", parking: "Parking", outdoor: "Outdoor Seating", drive: "Drive-Through" };
+const FEATURE_ICONS  = { wifi: "fa-wifi", parking: "fa-parking", outdoor: "fa-leaf", drive: "fa-car" };
+
+// ══════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════
+let activeState   = "";
+let activeCityQ   = "";
+let activeFeatures = [];
+let activeStatus  = "";
+let currentView   = "grid";
+
+// ══════════════════════════════════════
+//  FILTER LOGIC
+// ══════════════════════════════════════
+function filterAll() {
+  activeStatus = document.getElementById("statusSelect").value;
+  const sort   = document.getElementById("sortSelect").value;
+
+  let results = CAFES.filter(c => {
+    if (activeState && c.state !== activeState) return false;
+    if (activeCityQ && !c.city.toLowerCase().includes(activeCityQ.toLowerCase())) return false;
+    if (activeStatus && c.status !== activeStatus) return false;
+    if (activeFeatures.length > 0 && !activeFeatures.every(f => c.features.includes(f))) return false;
+    return true;
+  });
+
+  if (sort === "rating") results.sort((a,b) => b.rating - a.rating);
+  if (sort === "az")     results.sort((a,b) => a.city.localeCompare(b.city));
+
+  renderCards(results);
+  updateMeta(results);
+}
+
+function renderCards(results) {
+  const grid   = document.getElementById("cafes-grid");
+  const empty  = document.getElementById("emptyState");
+
+  if (results.length === 0) {
+    grid.innerHTML = "";
+    empty.classList.add("show");
+    return;
+  }
+  empty.classList.remove("show");
+  grid.innerHTML = results.map((c, i) => buildCard(c, i)).join("");
+}
+
+function buildCard(c, i) {
+  const isOpen = c.status === "open";
+  const featChips = c.features.slice(0,3).map(f =>
+    `<span class="chip ${f==='wifi'?'blue':f==='outdoor'?'green':''}">${f==='wifi'?'📶':f==='parking'?'🅿':f==='outdoor'?'🌿':'🚗'} ${FEATURE_LABELS[f]}</span>`
+  ).join("");
+
+  return `<div class="cafe-result-card" style="animation-delay:${i*0.06}s">
+    <div class="card-photo">
+      ${PHOTOS[c.photo]}
+      <div class="open-badge${!isOpen?' soon':''}">● ${isOpen ? 'Open Now' : 'Opens at 9am'}</div>
+      <div class="rating-badge">★ ${c.rating}</div>
+    </div>
+    <div class="card-body-wrap">
+      <div class="d-flex justify-content-between align-items-start mb-1">
+        <div>
+          <div class="card-city">${c.city}</div>
+          <div class="card-state">${c.stateLabel}, India</div>
+        </div>
+        <div class="landmark-chip" title="${c.landmark}">
+          <i class="fas fa-landmark" style="font-size:0.85rem;color:var(--gold);"></i>
+        </div>
+      </div>
+      <div class="card-address">
+        <i class="fas fa-map-marker-alt"></i> ${c.address}
+      </div>
+      <div class="card-timing">
+        <i class="fas fa-clock"></i> ${c.hours}
+      </div>
+      <div class="card-features">${featChips}</div>
+      <div class="card-actions">
+        <button class="card-btn-primary" onclick="window.open('${c.mapsUrl}','_blank')">
+          <i class="fas fa-directions"></i> Get Directions
+        </button>
+        <button class="card-btn-icon" data-tip="Share" onclick="shareCard('${c.city}','${c.mapsUrl}')">
+          <i class="fas fa-share-alt"></i>
+        </button>
+        <button class="card-btn-icon" data-tip="Save" onclick="this.style.color='var(--gold)'">
+          <i class="fas fa-bookmark"></i>
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function updateMeta(results) {
+  document.getElementById("resultsCount").textContent = results.length;
+  let summary = results.length === 0 ? "No cafés found" :
+    activeState ? `${results.length} café${results.length!==1?'s':''} in ${document.querySelector('[data-state-label="'+activeState+'"]')?.textContent || activeState}` :
+    `All ${results.length} cafés across India`;
+  if (activeCityQ) summary += ` matching "${activeCityQ}"`;
+  document.getElementById("resultsSummary").textContent = summary;
+}
+
+// ══════════════════════════════════════
+//  STATE CHANGE
+// ══════════════════════════════════════
+function selectState(state, btn) {
+  activeState = state;
+  document.getElementById("stateSelect").value = state;
+  document.querySelectorAll(".state-pill").forEach(p => p.classList.remove("active"));
+  btn.classList.add("active");
+  // Reset city
+  document.getElementById("cityInput").value = "";
+  activeCityQ = "";
+  document.getElementById("clearCityBtn").classList.remove("show");
+  document.getElementById("citySuggestions").classList.remove("show");
+  filterAll();
+}
+
+function onStateChange() {
+  const val = document.getElementById("stateSelect").value;
+  activeState = val;
+  document.querySelectorAll(".state-pill").forEach(p => {
+    p.classList.toggle("active", p.dataset.state === val || (val==='' && p.textContent==='All'));
+  });
+  document.querySelectorAll(".state-pill").forEach(p => {
+    const map = {gujarat:"Gujarat",maharashtra:"Maharashtra",rajasthan:"Rajasthan",delhi:"Delhi",karnataka:"Karnataka"};
+    if (val === "") { if(p.textContent==="All") p.classList.add("active"); }
+    else { if(map[val]===p.textContent) p.classList.add("active"); }
+  });
+  document.getElementById("cityInput").value = "";
+  activeCityQ = "";
+  document.getElementById("clearCityBtn").classList.remove("show");
+  filterAll();
+}
+
+// Fix state pills to carry data-state
+document.querySelectorAll(".state-pill").forEach(p => {
+  const map = {"All":"","Gujarat":"gujarat","Maharashtra":"maharashtra","Rajasthan":"rajasthan","Delhi":"delhi","Karnataka":"karnataka"};
+  p.dataset.state = map[p.textContent] ?? "";
+});
+
+// ══════════════════════════════════════
+//  CITY SEARCH + SUGGESTIONS
+// ══════════════════════════════════════
+function onCityInput() {
+  const val = document.getElementById("cityInput").value;
+  activeCityQ = val;
+  document.getElementById("clearCityBtn").classList.toggle("show", val.length > 0);
+
+  const sug = document.getElementById("citySuggestions");
+  if (!val) { sug.classList.remove("show"); filterAll(); return; }
+
+  // Build suggestions
+  let pool = [];
+  const stateFilter = activeState || null;
+  if (stateFilter && STATE_CITIES[stateFilter]) {
+    pool = STATE_CITIES[stateFilter].map(c => ({ city: c, state: stateFilter }));
+  } else {
+    Object.entries(STATE_CITIES).forEach(([s, cities]) => {
+      cities.forEach(c => pool.push({ city: c, state: s }));
+    });
+  }
+  const STATE_LABELS = {gujarat:"Gujarat",maharashtra:"Maharashtra",rajasthan:"Rajasthan",delhi:"Delhi",karnataka:"Karnataka"};
+  const matches = pool.filter(p => p.city.toLowerCase().includes(val.toLowerCase()));
+
+  if (matches.length === 0) {
+    sug.innerHTML = `<div class="no-suggestions">No cities found for "${val}"</div>`;
+    sug.classList.add("show");
+    filterAll();
+    return;
+  }
+  sug.innerHTML = matches.slice(0,6).map(m =>
+    `<div class="suggestion-item" onclick="selectCity('${m.city}','${m.state}')">
+      <i class="fas fa-map-pin sug-icon"></i>
+      ${m.city}
+      <span class="sug-state">${STATE_LABELS[m.state]}</span>
+    </div>`
+  ).join("");
+  sug.classList.add("show");
+  filterAll();
+}
+
+function selectCity(city, state) {
+  document.getElementById("cityInput").value = city;
+  activeCityQ = city;
+  document.getElementById("clearCityBtn").classList.add("show");
+  document.getElementById("citySuggestions").classList.remove("show");
+  // Also set the state
+  if (state) {
+    activeState = state;
+    document.getElementById("stateSelect").value = state;
+    document.querySelectorAll(".state-pill").forEach(p => {
+      p.classList.toggle("active", p.dataset.state === state);
+    });
+  }
+  filterAll();
+}
+
+function clearCity() {
+  document.getElementById("cityInput").value = "";
+  activeCityQ = "";
+  document.getElementById("clearCityBtn").classList.remove("show");
+  document.getElementById("citySuggestions").classList.remove("show");
+  filterAll();
+}
+
+// Close suggestions on outside click
+document.addEventListener("click", e => {
+  if (!e.target.closest(".city-input-wrap")) {
+    document.getElementById("citySuggestions").classList.remove("show");
+  }
+});
+
+// ══════════════════════════════════════
+//  FEATURE TOGGLE
+// ══════════════════════════════════════
+function toggleFeature(btn) {
+  const f = btn.dataset.feature;
+  if (activeFeatures.includes(f)) {
+    activeFeatures = activeFeatures.filter(x => x !== f);
+    btn.classList.remove("active");
+  } else {
+    activeFeatures.push(f);
+    btn.classList.add("active");
+  }
+  filterAll();
+}
+
+// ══════════════════════════════════════
+//  VIEW TOGGLE
+// ══════════════════════════════════════
+function setView(v) {
+  currentView = v;
+  const grid = document.getElementById("cafes-grid");
+  grid.classList.toggle("grid-view", v === "grid");
+  grid.classList.toggle("list-view", v === "list");
+  document.getElementById("gridViewBtn").classList.toggle("active", v === "grid");
+  document.getElementById("listViewBtn").classList.toggle("active", v === "list");
+}
+
+// ══════════════════════════════════════
+//  CLEAR ALL
+// ══════════════════════════════════════
+function clearAll() {
+  activeState = ""; activeCityQ = ""; activeFeatures = []; activeStatus = "";
+  document.getElementById("stateSelect").value = "";
+  document.getElementById("cityInput").value = "";
+  document.getElementById("statusSelect").value = "";
+  document.getElementById("sortSelect").value = "default";
+  document.getElementById("clearCityBtn").classList.remove("show");
+  document.getElementById("citySuggestions").classList.remove("show");
+  document.querySelectorAll(".state-pill").forEach(p => p.classList.toggle("active", p.textContent==="All"));
+  document.querySelectorAll(".feature-tag").forEach(t => t.classList.remove("active"));
+  filterAll();
+}
+
+// ══════════════════════════════════════
+//  SHARE
+// ══════════════════════════════════════
+function shareCard(city, url) {
+  if (navigator.share) {
+    navigator.share({ title: `Brew & Bliss – ${city}`, url });
+  } else {
+    navigator.clipboard?.writeText(url);
+    alert("Link copied to clipboard!");
+  }
+}
+
+// ══════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════
+filterAll();
+</script>
+</body>
+</html>

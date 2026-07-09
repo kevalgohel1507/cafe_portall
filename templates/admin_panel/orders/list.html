@@ -1,0 +1,67 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block title %}Orders — Admin{% endblock %}
+{% block page_title %}Orders{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 style="color:var(--cream);margin:0;">All Orders</h4>
+  <div class="d-flex gap-2">
+    {% for status_val, status_label in "pending,Pending|confirmed,Confirmed|preparing,Preparing|ready,Ready|delivered,Delivered|cancelled,Cancelled"|split:"|" %}{% endfor %}
+    <form method="get">
+      <select name="status" class="form-select form-select-sm" style="min-width:160px;" onchange="this.form.submit()">
+        <option value="">All Statuses</option>
+        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+        <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>Confirmed</option>
+        <option value="preparing" {% if status_filter == 'preparing' %}selected{% endif %}>Preparing</option>
+        <option value="ready" {% if status_filter == 'ready' %}selected{% endif %}>Ready</option>
+        <option value="out_for_delivery" {% if status_filter == 'out_for_delivery' %}selected{% endif %}>Out for Delivery</option>
+        <option value="delivered" {% if status_filter == 'delivered' %}selected{% endif %}>Delivered</option>
+        <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+        <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelled</option>
+      </select>
+    </form>
+  </div>
+</div>
+<div class="cafe-card">
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr><th>Order #</th><th>Customer</th><th>Type</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+        <tr>
+          <td><strong style="color:var(--gold);">#{{ order.order_number }}</strong></td>
+          <td>
+            <p style="color:var(--cream);margin:0;font-size:.9rem;">{{ order.user.get_full_name|default:order.user.username }}</p>
+            <small style="color:var(--text-muted);">{{ order.user.email }}</small>
+          </td>
+          <td><small style="color:var(--text-muted);">{{ order.get_order_type_display }}</small></td>
+          <td>{{ order.items.count }}</td>
+          <td style="font-weight:600;color:var(--cream);">₹{{ order.total_amount }}</td>
+          <td>
+            <span style="color:{% if order.payment_status == 'paid' %}#75d98f{% else %}#ffd84d{% endif %};font-size:.85rem;">
+              {{ order.get_payment_status_display }}
+            </span>
+          </td>
+          <td>
+            <span class="badge rounded-pill px-2 py-1" style="font-size:.75rem;
+              {% if order.status in 'delivered,completed' %}background:rgba(40,167,69,.2);color:#75d98f;
+              {% elif order.status == 'cancelled' %}background:rgba(220,53,69,.2);color:#f27680;
+              {% elif order.status == 'preparing' %}background:rgba(255,193,7,.2);color:#ffd84d;
+              {% else %}background:rgba(23,162,184,.2);color:#6ee3f5;{% endif %}">
+              {{ order.get_status_display }}
+            </span>
+          </td>
+          <td style="color:var(--text-muted);font-size:.82rem;">{{ order.created_at|date:"d M, g:i A" }}</td>
+          <td>
+            <a href="{% url 'admin_panel:order_detail' order.pk %}" class="btn btn-outline-cafe btn-sm">View</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:3rem;">No orders found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

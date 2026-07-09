@@ -1,0 +1,96 @@
+{% extends 'base/base.html' %}
+{% block title %}My Profile — Brew & Bliss{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row g-4">
+    <!-- Profile Card -->
+    <div class="col-lg-4">
+      <div class="cafe-card p-4 text-center">
+        <div style="width:90px;height:90px;background:rgba(212,168,83,0.15);border:2px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 1rem;">
+          {% if user.avatar %}<img src="{{ user.avatar.url }}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+          {% else %}{{ user.first_name|first|upper|default:"U" }}{% endif %}
+        </div>
+        <h4 style="color:var(--cream);">{{ user.get_full_name|default:user.username }}</h4>
+        <p style="color:var(--text-muted);">{{ user.email }}</p>
+        <span class="badge" style="background:rgba(212,168,83,0.2);color:var(--gold);padding:.4rem 1rem;border-radius:20px;">
+          {% if user.is_admin_user %}👑 Admin{% else %}👤 Member{% endif %}
+        </span>
+        <a href="{% url 'accounts:edit_profile' %}" class="btn btn-outline-cafe w-100 mt-3">Edit Profile</a>
+      </div>
+      <!-- Loyalty Card -->
+      {% if loyalty %}
+      <div class="cafe-card p-4 mt-3">
+        <h6 style="color:var(--gold);">🎖️ Loyalty Status</h6>
+        <div class="d-flex justify-content-between mt-2">
+          <span style="color:var(--text-muted);">Tier</span>
+          <strong style="color:var(--cream);">{{ loyalty.tier|title }}</strong>
+        </div>
+        <div class="d-flex justify-content-between mt-1">
+          <span style="color:var(--text-muted);">Points</span>
+          <strong style="color:var(--gold);">{{ loyalty.points }} pts</strong>
+        </div>
+        <a href="{% url 'loyalty:dashboard' %}" class="btn btn-cafe btn-sm w-100 mt-3">View Rewards</a>
+      </div>
+      {% endif %}
+    </div>
+    <!-- Stats + Orders -->
+    <div class="col-lg-8">
+      <div class="row g-3 mb-4">
+        <div class="col-4">
+          <div class="cafe-card p-3 text-center">
+            <div style="font-size:1.5rem;color:var(--gold);">{{ total_orders }}</div>
+            <small style="color:var(--text-muted);">Total Orders</small>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="cafe-card p-3 text-center">
+            <div style="font-size:1.5rem;color:var(--gold);">₹{{ total_spent|floatformat:0 }}</div>
+            <small style="color:var(--text-muted);">Total Spent</small>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="cafe-card p-3 text-center">
+            <div style="font-size:1.5rem;color:var(--gold);">{{ loyalty.points|default:0 }}</div>
+            <small style="color:var(--text-muted);">Points</small>
+          </div>
+        </div>
+      </div>
+      <div class="cafe-card p-4">
+        <div class="d-flex justify-content-between mb-3">
+          <h5 style="color:var(--cream);">Recent Orders</h5>
+          <a href="{% url 'orders:order_history' %}" style="color:var(--gold);font-size:.9rem;">View All →</a>
+        </div>
+        {% if orders %}
+        <div class="table-responsive">
+          <table class="table" style="color:var(--cream);">
+            <thead style="color:var(--text-muted);font-size:.85rem;">
+              <tr><th>Order #</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              {% for order in orders %}
+              <tr>
+                <td><a href="{% url 'orders:order_detail' order.pk %}" style="color:var(--gold);">#{{ order.order_number }}</a></td>
+                <td style="color:var(--text-muted);">{{ order.created_at|date:"d M" }}</td>
+                <td>{{ order.items.count }}</td>
+                <td>₹{{ order.total_amount }}</td>
+                <td>
+                  <span class="badge rounded-pill" style="
+                    {% if order.status == 'delivered' or order.status == 'completed' %}background:rgba(40,167,69,.2);color:#75d98f;
+                    {% elif order.status == 'cancelled' %}background:rgba(220,53,69,.2);color:#f27680;
+                    {% else %}background:rgba(255,193,7,.2);color:#ffd84d;{% endif %}">
+                    {{ order.get_status_display }}
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p style="color:var(--text-muted);text-align:center;padding:2rem;">No orders yet. <a href="{% url 'menu:menu_list' %}" style="color:var(--gold);">Browse the menu →</a></p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

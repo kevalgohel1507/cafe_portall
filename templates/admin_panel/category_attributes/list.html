@@ -1,0 +1,89 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block title %}Category Attributes - Admin{% endblock %}
+{% block page_title %}Category Attributes{% endblock %}
+{% block content %}
+<div class="mb-4">
+  <h4 style="color:var(--cream);margin:0;">Category Attribute Mapping</h4>
+  <small style="color:var(--text-muted);">Select a category, check required attributes, and save mapping.</small>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="cafe-card p-4 h-100">
+      <form method="get">
+        <label class="form-label">Select Category</label>
+        <select name="category" class="form-select" required>
+          <option value="">Choose category</option>
+          {% for cat in categories %}
+          <option value="{{ cat.pk }}" {% if selected_category and selected_category.pk == cat.pk %}selected{% endif %}>{{ cat.indented_name }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-cafe mt-3 w-100">Load Attributes</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="cafe-card p-4">
+      {% if selected_category %}
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="category_id" value="{{ selected_category.pk }}">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h5 style="margin:0;color:var(--cream);">{{ selected_category.full_path }}</h5>
+            <small style="color:var(--text-muted);">Choose attributes for this category</small>
+          </div>
+          <button type="submit" class="btn btn-cafe">Save Mapping</button>
+        </div>
+
+        {% if attributes %}
+        <div class="row g-2">
+          {% for attr in attributes %}
+          <div class="col-md-6">
+            <label class="form-check" style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:.6rem 1rem .6rem 2.2rem;display:block;">
+              <input class="form-check-input" type="checkbox" name="attributes" value="{{ attr.id }}" {% if attr.id in selected_attribute_ids %}checked{% endif %}>
+              <span style="color:var(--cream);font-weight:500;">{{ attr.name }}</span>
+              {% if attr.description %}<br><small style="color:var(--text-muted);">{{ attr.description }}</small>{% endif %}
+            </label>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:var(--text-muted);margin:0;">No attributes found. Add attributes first from the Attributes page.</p>
+        {% endif %}
+      </form>
+      {% else %}
+      <p style="color:var(--text-muted);margin:0;">Select a category to view and assign attributes.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% if selected_category %}
+<div class="cafe-card mt-4">
+  <div class="p-3 border-bottom" style="border-color:var(--border)!important;">
+    <h6 style="margin:0;color:var(--cream);">Current Mappings</h6>
+  </div>
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr><th>Category</th><th>Attribute</th><th>Required</th><th>Order</th></tr>
+      </thead>
+      <tbody>
+        {% for item in category_mappings %}
+        <tr>
+          <td style="color:var(--cream);font-weight:600;">{{ item.category.full_path }}</td>
+          <td style="color:var(--cream);">{{ item.attribute.name }}</td>
+          <td style="color:{% if item.is_required %}#75d98f{% else %}var(--text-muted){% endif %};">{% if item.is_required %}Yes{% else %}No{% endif %}</td>
+          <td style="color:var(--text-muted);">{{ item.display_order }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:2rem;">No attributes mapped for this category yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

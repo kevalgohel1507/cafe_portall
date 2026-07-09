@@ -1,0 +1,220 @@
+{% extends 'base/base.html' %}
+{% block title %}Menu — Brew & Bliss{% endblock %}
+{% block extra_styles %}
+.filter-bar { background:var(--card-bg); border:1px solid var(--border); border-radius:16px; padding:1.25rem 1.5rem; }
+.category-pill {
+  display:inline-flex; align-items:center; gap:.4rem; padding:.4rem 1.1rem; border-radius:50px;
+  border:1px solid var(--border); color:var(--text-muted);
+  font-size:.85rem; cursor:pointer; text-decoration:none; transition:all .2s;
+}
+.category-pill:hover, .category-pill.active {
+  background:var(--gold); color:var(--espresso); border-color:var(--gold); font-weight:600;
+}
+.category-nav { display:flex; flex-wrap:wrap; gap:.65rem; }
+.category-group { position:relative; }
+.category-dropdown {
+  position:absolute;
+  top:calc(100% + 8px);
+  left:0;
+  min-width:220px;
+  background:var(--card-bg);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:.5rem;
+  display:none;
+  z-index:20;
+  box-shadow:0 14px 30px rgba(0,0,0,.25);
+}
+.category-group:hover .category-dropdown { display:block; }
+.category-dropdown a {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:.5rem;
+  color:var(--text-muted);
+  text-decoration:none;
+  border-radius:10px;
+  padding:.45rem .6rem;
+  font-size:.83rem;
+}
+.category-dropdown a:hover { background:rgba(212,168,83,.14); color:var(--cream); }
+.category-dropdown .chip-count {
+  background:rgba(255,255,255,.08);
+  border-radius:999px;
+  padding:.1rem .45rem;
+  font-size:.72rem;
+  line-height:1.3;
+}
+.product-card { background:var(--card-bg); border:1px solid var(--border); border-radius:16px; overflow:hidden; transition:all .2s; height:100%; }
+.product-card:hover { transform:translateY(-3px); border-color:rgba(212,168,83,.4); box-shadow:0 12px 30px rgba(0,0,0,.3); }
+.product-thumb { height:180px; background:linear-gradient(135deg,var(--roast),var(--espresso)); display:flex;align-items:center;justify-content:center;font-size:3rem;position:relative;overflow:hidden; }
+.product-thumb img { width:100%;height:100%;object-fit:cover; }
+.discount-tag { position:absolute;top:10px;right:10px;background:var(--gold);color:var(--espresso);font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:8px; }
+.rating-stars { color:var(--gold); font-size:.8rem; }
+.qty-control { display:flex;align-items:center;gap:.5rem; }
+.qty-btn { width:28px;height:28px;border:1px solid var(--border);background:transparent;color:var(--cream);border-radius:6px;cursor:pointer;font-size:1rem;transition:all .2s; }
+.qty-btn:hover { background:var(--gold);color:var(--espresso);border-color:var(--gold); }
+{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <!-- Header -->
+  <div class="mb-4">
+    <h2 class="section-title">Our Menu</h2>
+    <p class="section-subtitle">Crafted with love, every single day</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar mb-4">
+    <form method="get" class="row g-3 align-items-center">
+      {% if selected_category %}
+      <input type="hidden" name="category" value="{{ selected_category }}">
+      {% endif %}
+      <div class="col-12 col-md-4">
+        <div class="input-group">
+          <span class="input-group-text" style="background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text-muted);">
+            <i class="fas fa-search"></i>
+          </span>
+          <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search menu...">
+        </div>
+      </div>
+      <div class="col-auto">
+        <select name="sort" class="form-select" style="min-width:160px;">
+          <option value="">Sort by</option>
+          <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+          <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+          <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest First</option>
+          <option value="popular" {% if sort == 'popular' %}selected{% endif %}>Most Popular</option>
+        </select>
+      </div>
+      <div class="col-auto">
+        <div class="form-check form-switch mt-1">
+          <input class="form-check-input" type="checkbox" name="veg" id="vegSwitch" value="1" {% if veg_only %}checked{% endif %} onchange="this.form.submit()">
+          <label class="form-check-label" for="vegSwitch" style="color:var(--text-muted);">Veg Only 🌿</label>
+        </div>
+      </div>
+      <div class="col-auto"><button class="btn btn-cafe btn-sm px-3">Filter</button></div>
+    </form>
+  </div>
+
+  <!-- Parent Categories with Hover Subcategories -->
+  <div class="mb-3 category-nav">
+    <a href="{% url 'menu:menu_list' %}?{% if query %}q={{ query|urlencode }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}{% if veg_only %}veg=1{% endif %}" class="category-pill {% if not selected_category %}active{% endif %}"><i class="fas fa-th-large"></i> All</a>
+    {% for item in parent_nav %}
+    {% with parent=item.category children=item.children %}
+    <div class="category-group">
+      <a href="{% url 'menu:category_products' parent.slug %}?{% if query %}q={{ query|urlencode }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}{% if veg_only %}veg=1{% endif %}" class="category-pill {% if selected_category_obj and selected_category_obj.slug == parent.slug %}active{% endif %}">
+        {% if parent.image %}
+        <img src="{{ parent.image.url }}" alt="{{ parent.name }}" style="width:16px;height:16px;object-fit:cover;border-radius:50%;">
+        {% else %}
+        <i class="fas {{ parent.icon|default:'fa-tag' }}"></i>
+        {% endif %}
+        {{ parent.name }}
+      </a>
+      {% if children %}
+      <div class="category-dropdown">
+        {% for child in children %}
+        <a href="{% url 'menu:category_products' child.slug %}?{% if query %}q={{ query|urlencode }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}{% if veg_only %}veg=1{% endif %}">
+          <span>{{ child.name }}</span>
+          {% if child.children.all %}<span class="chip-count">{{ child.children.count }}</span>{% endif %}
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    {% endwith %}
+    {% endfor %}
+  </div>
+
+  {% if selected_category_obj %}
+  <div class="mb-4">
+    <div class="d-flex align-items-center gap-2 flex-wrap mb-2" style="font-size:.83rem;color:var(--text-muted);">
+      <span>Browsing:</span>
+      {% for crumb in category_breadcrumb %}
+      <a href="{% url 'menu:category_products' crumb.slug %}?{% if query %}q={{ query|urlencode }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}{% if veg_only %}veg=1{% endif %}" style="color:var(--text-muted);text-decoration:none;">{{ crumb.name }}</a>
+      {% if not forloop.last %}<span style="opacity:.5;">/</span>{% endif %}
+      {% endfor %}
+    </div>
+
+    {% if child_categories %}
+    <div class="d-flex flex-wrap gap-2">
+      <a href="{% url 'menu:category_products' selected_category_obj.slug %}?{% if query %}q={{ query|urlencode }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}{% if veg_only %}veg=1{% endif %}" class="category-pill active">All {{ selected_category_obj.name }}</a>
+      {% for child in child_categories %}
+      <a href="{% url 'menu:category_products' child.slug %}?{% if query %}q={{ query|urlencode }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}{% if veg_only %}veg=1{% endif %}" class="category-pill {% if selected_category == child.slug %}active{% endif %}">
+        {% if child.image %}
+        <img src="{{ child.image.url }}" alt="{{ child.name }}" style="width:16px;height:16px;object-fit:cover;border-radius:50%;">
+        {% else %}
+        <i class="fas {{ child.icon|default:'fa-tag' }}"></i>
+        {% endif %}
+        {{ child.name }}
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Products Grid -->
+  {% if products %}
+  <div class="row g-4">
+    {% for product in products %}
+    <div class="col-md-6 col-lg-4 col-xl-3">
+      <div class="product-card">
+        <div class="product-thumb">
+          {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}">
+          {% elif product.category and product.category.image %}
+          <img src="{{ product.category.image.url }}" alt="{{ product.category.name }}" style="width:72px;height:72px;object-fit:cover;border-radius:14px;opacity:.65;">
+          {% else %}<i class="fas {{ product.category.icon|default:'fa-coffee' }}" style="opacity:.3;font-size:3rem;"></i>{% endif %}
+          {% if product.discount_percentage %}<span class="discount-tag">-{{ product.discount_percentage }}%</span>{% endif %}
+        </div>
+        <div class="p-3">
+          <div class="d-flex gap-1 mb-2 flex-wrap">
+            {% if product.is_vegetarian %}<span class="badge-veg">🌿</span>{% endif %}
+            {% if product.is_new %}<span class="badge-new">New</span>{% endif %}
+            {% if product.is_bestseller %}<span class="badge-hot">🔥</span>{% endif %}
+          </div>
+          <h6 style="color:var(--cream);font-weight:600;margin-bottom:.2rem;">{{ product.name }}</h6>
+          <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:.5rem;line-height:1.5;">{{ product.short_description|default:product.description|truncatechars:60 }}</p>
+          
+          {% if product.average_rating %}
+          <div class="rating-stars mb-2">
+            {% for i in "12345"|make_list %}
+              {% if forloop.counter <= product.average_rating %}★{% else %}☆{% endif %}
+            {% endfor %}
+            <span style="color:var(--text-muted);font-size:.75rem;">({{ product.review_count }})</span>
+          </div>
+          {% endif %}
+
+          <div class="d-flex gap-2 flex-wrap" style="font-size:.78rem;color:var(--text-muted);margin-bottom:.75rem;">
+            {% if product.calories %}<span>🔥 {{ product.calories }} cal</span>{% endif %}
+            {% if product.prep_time %}<span>⏱ {{ product.prep_time }}m</span>{% endif %}
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <span style="color:var(--gold);font-weight:700;">₹{{ product.effective_price }}</span>
+              {% if product.discounted_price %}
+              <small style="color:var(--text-muted);text-decoration:line-through;margin-left:.3rem;">₹{{ product.price }}</small>
+              {% endif %}
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+              <a href="{% url 'menu:product_detail' product.slug %}" style="color:var(--text-muted);font-size:.8rem;">Details</a>
+              <form method="post" action="{% url 'orders:add_to_cart' product.pk %}">
+                {% csrf_token %}<input type="hidden" name="quantity" value="1">
+                <button class="btn btn-cafe btn-sm">+ Cart</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-5">
+    <div style="font-size:4rem;opacity:.3;">☕</div>
+    <h5 style="color:var(--text-muted);margin-top:1rem;">No items found</h5>
+    <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-cafe mt-3">Clear Filters</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

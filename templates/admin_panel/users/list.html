@@ -1,0 +1,77 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% block title %}Users — Admin{% endblock %}
+{% block page_title %}Users{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div><h4 style="color:var(--cream);margin:0;">All Users</h4></div>
+  <a href="{% url 'admin_panel:user_create' %}" class="btn btn-cafe"><i class="fas fa-plus me-2"></i>Add User</a>
+</div>
+<div class="cafe-card p-3 mb-4">
+  <form method="get" class="row g-2 align-items-center">
+    <div class="col-md-5">
+      <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search by username or email...">
+    </div>
+    <div class="col-md-3">
+      <select name="role" class="form-select" onchange="this.form.submit()">
+        <option value="">All Roles</option>
+        <option value="1" {% if role == '1' %}selected{% endif %}>Users</option>
+        <option value="2" {% if role == '2' %}selected{% endif %}>Admins</option>
+      </select>
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-cafe btn-sm px-3">Search</button>
+      <a href="{% url 'admin_panel:user_list' %}" class="btn btn-outline-cafe btn-sm px-3 ms-1">Clear</a>
+    </div>
+  </form>
+</div>
+<div class="cafe-card">
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr><th>User</th><th>Role</th><th>Phone</th><th>Orders</th><th>Joined</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div style="width:36px;height:36px;background:rgba(212,168,83,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--gold);flex-shrink:0;">
+                {{ u.first_name|first|upper|default:u.username|first|upper }}
+              </div>
+              <div>
+                <p style="color:var(--cream);margin:0;font-weight:600;font-size:.9rem;">{{ u.get_full_name|default:u.username }}</p>
+                <small style="color:var(--text-muted);">{{ u.email }}</small>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="badge" style="background:{% if u.is_admin_user %}rgba(212,168,83,.2);color:var(--gold){% else %}rgba(23,162,184,.15);color:#6ee3f5{% endif %};border-radius:8px;padding:.3rem .75rem;">
+              {% if u.is_admin_user %}👑 Admin{% else %}👤 User{% endif %}
+            </span>
+          </td>
+          <td style="color:var(--text-muted);font-size:.85rem;">{{ u.phone|default:"—" }}</td>
+          <td style="color:var(--cream);">{{ u.orders.count }}</td>
+          <td style="color:var(--text-muted);font-size:.82rem;">{{ u.created_at|date:"d M Y" }}</td>
+          <td>
+            <form method="post" action="{% url 'admin_panel:user_toggle' u.pk %}">
+              {% csrf_token %}
+              <button class="btn btn-sm" style="background:{% if u.is_active %}rgba(40,167,69,.15);color:#75d98f;border:1px solid rgba(40,167,69,.3){% else %}rgba(220,53,69,.15);color:#f27680;border:1px solid rgba(220,53,69,.3){% endif %};border-radius:8px;font-size:.78rem;padding:.25rem .65rem;">
+                {% if u.is_active %}Active{% else %}Inactive{% endif %}
+              </button>
+            </form>
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{% url 'admin_panel:user_edit' u.pk %}" class="btn btn-outline-cafe btn-sm">Edit</a>
+              <a href="{% url 'admin_panel:user_delete' u.pk %}" class="btn btn-del btn-sm">Del</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:3rem;">No users found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

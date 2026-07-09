@@ -1,0 +1,35 @@
+{% extends 'base/base.html' %}
+{% block title %}My Reviews — Brew & Bliss{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <h2 class="section-title mb-4">My Reviews</h2>
+  {% if reviews %}
+  <div class="row g-3">
+    {% for review in reviews %}
+    <div class="col-md-6">
+      <div class="cafe-card p-4">
+        <div class="d-flex justify-content-between mb-2">
+          <h6 style="color:var(--cream);">{{ review.product.name }}</h6>
+          <span style="color:var(--gold);">{{ review.rating }}★</span>
+        </div>
+        {% if review.title %}<p style="color:var(--cream);font-weight:600;font-size:.9rem;margin:.2rem 0;">{{ review.title }}</p>{% endif %}
+        <p style="color:var(--text-muted);font-size:.9rem;">{{ review.comment }}</p>
+        <div class="d-flex justify-content-between align-items-center mt-2">
+          <small style="color:rgba(160,120,96,.5);">{{ review.created_at|date:"d M Y" }}</small>
+          <span style="font-size:.78rem;color:{% if review.is_approved %}#75d98f{% else %}#ffd84d{% endif %};">
+            {% if review.is_approved %}✓ Approved{% else %}⏳ Pending{% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-5">
+    <div style="font-size:4rem;opacity:.2;">⭐</div>
+    <h5 style="color:var(--text-muted);margin-top:1rem;">No reviews yet</h5>
+    <a href="{% url 'menu:menu_list' %}" class="btn btn-cafe mt-3">Browse Menu to Review</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
