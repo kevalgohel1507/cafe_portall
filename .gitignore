@@ -27,5 +27,8 @@ Thumbs.db
 # Environment variables
 .env
 
+# tem_zip file 
+templates.zip
+
 # Logs
 *.log
